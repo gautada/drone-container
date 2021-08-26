@@ -1,0 +1,10 @@
+#!/bin/sh
+VERSION='v2.1.0'
+# ---------------------- BUILD
+docker build --build-arg BRANCH=${VERSION} --no-cache --tag droneci:build .
+
+# ---------------------- TEST
+
+# ---------------------- DEPLOY
+docker tag droneci:build gautada/droneci:${VERSION}
+docker push gautada/droneci:${VERSION}
