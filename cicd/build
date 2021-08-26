@@ -6,5 +6,5 @@ docker build --build-arg BRANCH=${VERSION} --no-cache --tag droneci:build .
 # ---------------------- TEST
 
 # ---------------------- DEPLOY
-docker tag droneci:build gautada/droneci:${VERSION}
-docker push gautada/droneci:${VERSION}
+# docker tag droneci:build gautada/droneci:${VERSION}
+# docker push gautada/droneci:${VERSION}
