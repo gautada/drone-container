@@ -9,9 +9,9 @@ RUN echo "America/New_York" > /etc/timezone
 
 # ------------------------------------------------------------- BUILD DRONECI
 FROM alpine:$ALPINE_TAG as config-droneci
-ARG BRANCH_SERVER=v0.0.0
-ARG BRANCH_RUNNER=v0.0.0
-ARG BRANCH_CLI=v0.0.0
+ARG SERVER_BRANCH=v0.0.0
+ARG RUNNER_BRANCH=v0.0.0
+ARG CLI_BRANCH=v0.0.0
 
 RUN apk add --no-cache build-base git go
 
@@ -19,12 +19,12 @@ RUN git config --global advice.detachedHead false
 
 RUN mkdir /usr/lib/go/src/github.com
 WORKDIR /usr/lib/go/src/github.com
-RUN git clone --branch $BRANCH_SERVER --depth 1 https://github.com/drone/drone.git
+RUN git clone --branch $SERVER_BRANCH --depth 1 https://github.com/drone/drone.git
 WORKDIR /usr/lib/go/src/github.com/drone/cmd/drone-server
 RUN go build
 
 WORKDIR /usr/lib/go/src/github.com
-RUN git clone --branch $BRANCH_RUNNER --depth 1 https://github.com/drone-runners/drone-runner-kube.git
+RUN git clone --branch $RUNNER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-kube.git
 WORKDIR /usr/lib/go/src/github.com/drone-runner-kube
 RUN go test ./...
 ENV CGO_ENABLED=0
@@ -33,7 +33,7 @@ RUN set -x
 RUN GOOS=linux GOARCH=arm64 go build -o release/linux/arm64/drone-runner-kube
 
 WORKDIR /usr/lib/go/src/github.com
-RUN git clone --branch $BRANCH_CLI --depth 1 https://github.com/drone/drone-cli.git
+RUN git clone --branch $CLI_BRANCH --depth 1 https://github.com/drone/drone-cli.git
 WORKDIR /usr/lib/go/src/github.com/drone-cli
 RUN go install ./...
 
