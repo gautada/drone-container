@@ -1,10 +1,21 @@
 #!/bin/sh
-VERSION='v2.1.0'
+
+VERSION_SERVER='v2.1.0'
+VERSION_RUNNER='v1.0.0-beta.9'
+VERSION_CLI='v1.3.3'
+VERSION="${VERSION_SERVER}_${VERSION_RUNNER}_${VERSION_CLI}"
 # ---------------------- BUILD
-docker build --build-arg BRANCH=${VERSION} --no-cache --tag droneci:build .
+docker build --build-arg BRANCH_SERVER=${VERSION_SERVER} \
+             --build-arg BRANCH_RUNNER=${VERSION_RUNNER} \
+             --build-arg BRANCH_CLI=${VERSION_CLI} \
+             --no-cache --tag droneci:build .
+
 
 # ---------------------- TEST
 
+
+
+
 # ---------------------- DEPLOY
-# docker tag droneci:build gautada/droneci:${VERSION}
-# docker push gautada/droneci:${VERSION}
+docker tag droneci:build gautada/droneci:${VERSION}
+docker push gautada/droneci:${VERSION}
