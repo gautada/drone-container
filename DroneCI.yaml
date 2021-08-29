@@ -12,9 +12,9 @@ steps:
     DOCKER_PASSWORD:
       from_secret: password.docker.io
     ALPINE_TAG: 3.14.1
-    VERSION_SERVER='v2.1.0'
-    VERSION_RUNNER='v1.0.0-beta.9'
-    VERSION_CLI='v1.3.3'
+    VERSION_SERVER: v2.1.0
+    VERSION_RUNNER: v1.0.0-beta.9
+    VERSION_CLI: v1.3.3
     OCI_OS: linux
     OCI_ARCH: arm64
   commands:
