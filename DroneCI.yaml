@@ -19,8 +19,9 @@ steps:
     OCI_ARCH: arm64
   commands:
   - sleep 5
-  - export OCI_VERSION=$VERSION_SERVER_$VERSION_RUNNER_$VERSION_CLI
-  - echo "${OCI_VERSION"
+  - echo $VERSION_SERVER
+  #  export OCI_VERSION=$VERSION_SERVER_$VERSION_RUNNER_$VERSION_CLI
+  #  echo "${OCI_VERSION"
   # buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
   # buildah bud --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg BRANCH=$OCI_VERSION --tag localhost/droneci:dev -f Containerfile
   # to-do: run the container, add the tests, then publish
