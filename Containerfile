@@ -63,5 +63,5 @@ RUN addgroup $USER \
  
 USER $USER
 
-RUN ln -s /opt/droneci-data/core.sqlite
+RUN ln -s /opt/droneci-data/core.sqlite ~/core.sqlite
 
