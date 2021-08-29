@@ -52,9 +52,9 @@ COPY --from=config-droneci /usr/lib/go/src/github.com/drone/cmd/drone-server/dro
 COPY --from=config-droneci /usr/lib/go/src/github.com/drone-runner-kube/release/linux/arm64/drone-runner-kube /usr/bin/drone-runner-kube
 COPY --from=config-droneci /usr/lib/go/bin/drone /usr/bin/drone
 
-RUN mkdir -p /opt/droneci-data \
- && touch /opt/droneci-data/core.sqlite && \
- && chmod 777 -R /opt/droneci-data
+RUN mkdir -p /opt/droneci-data
+RUN touch /opt/droneci-data/core.sqlite
+RUN chmod 777 -R /opt/droneci-data
  
 ARG USER=droneci
 RUN addgroup $USER \
