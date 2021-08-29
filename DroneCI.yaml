@@ -20,7 +20,7 @@ steps:
   commands:
   - sleep 5
   - buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
-  - set OCI_VERSION=$SERVER_VERSION_$RUNNER_VERSION_$CLI_VERSION
+  - set OCI_VERSION=$SERVER_VERSION'_'$RUNNER_VERSION'_'$CLI_VERSION
   - echo $OCI_VERSION
   - echo $SERVER_VERSION'_'$RUNNER_VERSION'_'$CLI_VERSION
   # buildah bud --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg OCI_VERSION=$OCI_VERSION --tag localhost/prometheus:dev -f Containerfile
