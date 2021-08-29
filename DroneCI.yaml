@@ -12,7 +12,6 @@ steps:
     DOCKER_PASSWORD:
       from_secret: password.docker.io
     ALPINE_TAG: 3.14.1
-    OCI_VERSION: v2.29.1
     SERVER_VERSION: v2.1.0
     RUNNER_VERSION: v1.0.0-beta.9
     CLI_VERSION: v1.3.3
@@ -23,6 +22,7 @@ steps:
   - buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
   - set OCI_VERSION=$SERVER_VERSION_$RUNNER_VERSION_$CLI_VERSION
   - echo $OCI_VERSION
+  - echo $SERVER_VERSION_$RUNNER_VERSION_$CLI_VERSION
   # buildah bud --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg OCI_VERSION=$OCI_VERSION --tag localhost/prometheus:dev -f Containerfile
   # to-do: run the container, add the tests, then publish
   # buildah push localhost/prometheus:dev docker://docker.io/gautada/prometheus:$OCI_VERSION
