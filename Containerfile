@@ -67,5 +67,5 @@ WORKDIR /home/droneci
 
 RUN ln -s /opt/droneci-data/core.sqlite ~/core.sqlite
 
-COPY config.env /etc/droneci/config.env
-CMD ["/usr/bin/drone-server", "--env-file", "/etc/droneci/config.env"]
+# COPY config.env /etc/droneci/config.env
+# CMD ["/usr/bin/drone-server", "--env-file", "/etc/droneci/config.env"]
