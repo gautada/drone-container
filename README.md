@@ -12,3 +12,10 @@ docker run -i -p 8080:8080 -t --rm --name droneci localhost/droneci:dev
 ```
 openssl rand -hex 16
 ```
+
+## Configuration
+
+### Secrets
+
+drone orgsecret add gautada ID_RSA_KEY = "..."
+drone orgsecret add gautada ID_RSA_KEY_PUB = "..."
