@@ -1,34 +1,5 @@
 kind: pipeline
 type: kubernetes
-name: container_integration
-
-steps:
-- name: integrate
-  image: gautada/builder:v1.21.4_v3.2.3
-  privileged: true
-  environment:
-    DOCKER_USERNAME:
-      from_secret: username.docker.io
-    DOCKER_PASSWORD:
-      from_secret: password.docker.io
-    ALPINE_TAG: 3.14.1
-    SERVER_BRANCH: v2.1.0
-    RUNNER_BRANCH: v1.0.0-beta.9
-    CLI_BRANCH: v1.3.3
-    OCI_OS: linux
-    OCI_ARCH: arm64
-  commands:
-  - sleep 5
-  - buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
-  - buildah bud --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --tag localhost/droneci:dev -f Containerfile
-  # to-do: run the container, add the tests, then publish
-  - buildah push localhost/droneci:dev docker://docker.io/gautada/droneci:$SERVER_BRANCH'_'$RUNNER_BRANCH'_'$CLI_BRANCH
-  # buildah images
-  
-
-
-kind: pipeline
-type: kubernetes
 name: Continuous Integration
 
 steps:
@@ -98,6 +69,6 @@ steps:
 
 trigger:
   branch:
-  - main
+  - dev
 
 
