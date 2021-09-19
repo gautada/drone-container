@@ -19,3 +19,5 @@ openssl rand -hex 16
 
 drone orgsecret add gautada ID_RSA_KEY = "..."
 drone orgsecret add gautada ID_RSA_KEY_PUB = "..."
+
+flipflop
