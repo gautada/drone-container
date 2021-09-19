@@ -34,7 +34,7 @@ steps:
       from_secret: podman.ssh.key
     ID_RSA_KEY_PUB:
       from_secret: podman.ssh.pkey
-        ALPINE_TAG: 3.14.2
+    ALPINE_TAG: 3.14.2
     SERVER_BRANCH: v2.1.0
     RUNNER_BRANCH: v1.0.0-beta.9
     CLI_BRANCH: v1.3.3
@@ -55,8 +55,10 @@ steps:
       from_secret: username.docker.io
     DOCKER_PASSWORD:
       from_secret: password.docker.io
-    OCI_VERSION: 3.2.3-r1
-    OCI_CONTAINER: builder
+    SERVER_BRANCH: v2.1.0
+    RUNNER_BRANCH: v1.0.0-beta.9
+    CLI_BRANCH: v1.3.3
+    OCI_CONTAINER: droneci
     OCI_REPOSITORY: docker://docker.io/gautada
     OCI_CPU1: aarch64
     OCI_CPU2: x86_64
