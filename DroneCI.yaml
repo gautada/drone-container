@@ -98,6 +98,6 @@ steps:
 
 trigger:
   branch:
-  - dev
+  - main
 
 
