@@ -12,16 +12,16 @@ steps:
     DOCKER_PASSWORD:
       from_secret: password.docker.io
     ALPINE_TAG: 3.14.2
-    SERVER_BRANCH: v2.1.0
-    RUNNER_BRANCH: v1.0.0-beta.9
-    CLI_BRANCH: v1.3.3
+    SERVER_BRANCH: v2.3.1
+    RUNNER_BRANCH: v1.0.0-beta.12
+    CLI_BRANCH: v1.4.0
     OCI_CONTAINER: droneci
     OCI_REPOSITORY: docker://docker.io/gautada
     OCI_CPU: aarch64
   commands:
   - buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
   - buildah bud --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag localhost/$OCI_CONTAINER:dev
-  - buildah push localhost/$OCI_CONTAINER:dev $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH'_'$RUNNER_BRANCH'_'$CLI_BRANCH'-'$OCI_CPU
+  - buildah push localhost/$OCI_CONTAINER:dev $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH-$OCI_CPU
 - name: build(x86_64) - remote
   image: docker.io/gautada/builder:3.2.3-r1-aarch64
   privileged: true
@@ -35,9 +35,9 @@ steps:
     ID_RSA_KEY_PUB:
       from_secret: podman.ssh.pkey
     ALPINE_TAG: 3.14.2
-    SERVER_BRANCH: v2.1.0
-    RUNNER_BRANCH: v1.0.0-beta.9
-    CLI_BRANCH: v1.3.3
+    SERVER_BRANCH: v2.3.1
+    RUNNER_BRANCH: v1.0.0-beta.12
+    CLI_BRANCH: v1.4.0
     OCI_CONTAINER: droneci
     OCI_REPOSITORY: docker://docker.io/gautada
     OCI_CPU: x86_64
@@ -46,7 +46,8 @@ steps:
   - ssh -o "StrictHostKeyChecking=no" -i /home/bob/.ssh/id_rsa bob@x86-builder.cicd.svc.cluster.local /bin/sleep 5
   - podman --remote --connection x86_64 login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
   - podman --remote --connection x86_64 build --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag localhost/$OCI_CONTAINER:dev .
-  - podman --remote --connection x86_64 push localhost/$OCI_CONTAINER:dev $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH'_'$RUNNER_BRANCH'_'$CLI_BRANCH'-'$OCI_CPU
+  - echo "$OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH-$OCI_CPU"
+  - podman --remote --connection x86_64 push localhost/$OCI_CONTAINER:dev $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH-$OCI_CPU
 - name: package
   image: docker.io/gautada/builder:3.2.3-r1-aarch64
   privileged: true
@@ -55,9 +56,7 @@ steps:
       from_secret: username.docker.io
     DOCKER_PASSWORD:
       from_secret: password.docker.io
-    SERVER_BRANCH: v2.1.0
-    RUNNER_BRANCH: v1.0.0-beta.9
-    CLI_BRANCH: v1.3.3
+    SERVER_BRANCH: v2.3.1
     OCI_CONTAINER: droneci
     OCI_REPOSITORY: docker://docker.io/gautada
     OCI_CPU1: aarch64
@@ -65,9 +64,9 @@ steps:
   commands:
   - buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
   - buildah manifest create localhost/$OCI_CONTAINER:man
-  - buildah manifest add localhost/$OCI_CONTAINER:man $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH'_'$RUNNER_BRANCH'_'$CLI_BRANCH'-'$OCI_CPU1
-  - buildah manifest add localhost/$OCI_CONTAINER:man $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH'_'$RUNNER_BRANCH'_'$CLI_BRANCH'-'$OCI_CPU2
-  - buildah push localhost/$OCI_CONTAINER:man $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH'_'$RUNNER_BRANCH'_'$CLI_BRANCH
+  - buildah manifest add localhost/$OCI_CONTAINER:man $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH-$OCI_CPU1
+  - buildah manifest add localhost/$OCI_CONTAINER:man $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH-$OCI_CPU2
+  - buildah push localhost/$OCI_CONTAINER:man $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH
 
 trigger:
   branch:
