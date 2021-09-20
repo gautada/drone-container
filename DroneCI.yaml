@@ -49,7 +49,7 @@ steps:
   #  echo "$OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH-$OCI_CPU"
   #  echo "localhost/$OCI_CONTAINER:dev"
   - podman --remote --connection x86_64 images
-  - podman --remote --connection x86_64 push "localhost/$OCI_CONTAINER:dev" "$OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH-$OCI_CPU"
+  # podman --remote --connection x86_64 push "localhost/$OCI_CONTAINER:dev" "$OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH-$OCI_CPU"
 - name: package
   image: docker.io/gautada/builder:3.2.3-r1-aarch64
   privileged: true
