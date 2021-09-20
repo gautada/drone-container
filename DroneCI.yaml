@@ -3,6 +3,25 @@ type: kubernetes
 name: Continuous Integration
 
 steps:
+- name: build(aarch64) - local
+  image: docker.io/gautada/builder:3.2.3-r1-aarch64
+  privileged: true
+  environment:
+    DOCKER_USERNAME:
+      from_secret: username.docker.io
+    DOCKER_PASSWORD:
+      from_secret: password.docker.io
+    ALPINE_TAG: 3.14.2
+    SERVER_BRANCH: v2.3.1
+    RUNNER_BRANCH: v1.0.0-beta.12
+    CLI_BRANCH: v1.4.0
+    OCI_CONTAINER: droneci
+    OCI_REPOSITORY: docker://docker.io/gautada
+    OCI_CPU: aarch64
+  commands:
+  - buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
+  - buildah bud --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag localhost/$OCI_CONTAINER:dev
+  - buildah push localhost/$OCI_CONTAINER:dev $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH-$OCI_CPU
 - name: build(x86_64) - remote
   image: docker.io/gautada/builder:3.2.3-r1-aarch64
   privileged: true
@@ -25,28 +44,10 @@ steps:
   commands:
   - /builder-base 1
   - ssh -o "StrictHostKeyChecking=no" -i /home/bob/.ssh/id_rsa bob@x86-builder.cicd.svc.cluster.local /bin/sleep 1
-  # podman --remote --connection x86_64 build --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag localhost/$OCI_CONTAINER:dev .
+  - podman --remote --connection x86_64 build --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag localhost/$OCI_CONTAINER:dev .
   - podman --remote --connection x86_64 login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
   - podman --remote --connection x86_64 push localhost'/'$OCI_CONTAINER':'dev $OCI_REPOSITORY'/'$OCI_CONTAINER':'$SERVER_BRANCH'-'$OCI_CPU
-- name: build(aarch64) - local
-  image: docker.io/gautada/builder:3.2.3-r1-aarch64
-  privileged: true
-  environment:
-    DOCKER_USERNAME:
-      from_secret: username.docker.io
-    DOCKER_PASSWORD:
-      from_secret: password.docker.io
-    ALPINE_TAG: 3.14.2
-    SERVER_BRANCH: v2.3.1
-    RUNNER_BRANCH: v1.0.0-beta.12
-    CLI_BRANCH: v1.4.0
-    OCI_CONTAINER: droneci
-    OCI_REPOSITORY: docker://docker.io/gautada
-    OCI_CPU: aarch64
-  commands:
-  - buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
-  - buildah bud --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag localhost/$OCI_CONTAINER:dev
-  - buildah push localhost/$OCI_CONTAINER:dev $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH-$OCI_CPU
+
 - name: package
   image: docker.io/gautada/builder:3.2.3-r1-aarch64
   privileged: true
