@@ -16,7 +16,7 @@ steps:
     RUNNER_BRANCH: v1.0.0-beta.12
     CLI_BRANCH: v1.4.0
     LIMAGE: localhost/droneci:dev
-    RIMAGE: docker://docker.io/gautada:v2.3.1-aarch64
+    RIMAGE: docker://docker.io/gautada/droneci:v2.3.1-aarch64
   commands:
   - buildah bud --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag $LIMAGE
   - buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
@@ -53,7 +53,7 @@ steps:
     ID_RSA_KEY_PUB:
       from_secret: podman.ssh.pkey
     LIMAGE: localhost/droneci:dev
-    RIMAGE: docker://docker.io/gautada:v2.3.1-x86_64
+    RIMAGE: docker://docker.io/gautada/droneci:v2.3.1-x86_64
   commands:
   - /builder-base 1
   # ssh -o "StrictHostKeyChecking=no" -i /home/bob/.ssh/id_rsa bob@x86-builder.cicd.svc.cluster.local /bin/sleep 1
