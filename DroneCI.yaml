@@ -74,8 +74,8 @@ steps:
     RIMAGE: docker://docker.io/gautada/droneci:v2.3.1
   commands:
   - buildah manifest create $MIMAGE
-  - buildah manifest add $MANIFEST $IMAGE1
-  - buildah manifest add $MANIFEST $IMAGE2
+  - buildah manifest add $MIMAGE $IMAGE1
+  - buildah manifest add $MIMAGE $IMAGE2
   - buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
   - buildah push $MIMAGE $RIMAGE
 
