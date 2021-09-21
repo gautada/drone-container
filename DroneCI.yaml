@@ -3,7 +3,7 @@ type: kubernetes
 name: Continuous Integration
 
 steps:
-- name: build-local
+- name: build-arm
   image: docker.io/gautada/builder:3.2.3-r1-aarch64
   privileged: true
   environment:
@@ -11,21 +11,6 @@ steps:
       from_secret: username.docker.io
     DOCKER_PASSWORD:
       from_secret: password.docker.io
-    ALPINE_TAG: 3.14.2
-    SERVER_BRANCH: v2.3.1
-    RUNNER_BRANCH: v1.0.0-beta.12
-    CLI_BRANCH: v1.4.0
-    LIMAGE: localhost/droneci:dev
-    RIMAGE: docker://docker.io/gautada/droneci:v2.3.1-aarch64
-  commands:
-  - buildah bud --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag $LIMAGE
-  - buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
-  - buildah push $LIMAGE $RIMAGE
-
-- name: build-remote
-  image: docker.io/gautada/builder:3.2.3-r1-aarch64
-  privileged: true
-  environment:
     ID_RSA_KEY:
       from_secret: podman.ssh.key
     ID_RSA_KEY_PUB:
@@ -35,10 +20,32 @@ steps:
     RUNNER_BRANCH: v1.0.0-beta.12
     CLI_BRANCH: v1.4.0
     LIMAGE: localhost/droneci:dev
+    RIMAGE: docker://docker.io/gautada/droneci:v2.3.1-aarch64
   commands:
-  - /builder-base 1
+  - podman --remote --connection arm build --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag localhost/drone:dev .
+  - podman --remote --connection arm login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
+  - podman --remote --connection arm push localhost/drone:dev docker.io/gautada/drone:v2.3.1-arm
+  # buildah bud --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag $LIMAGE
+  # buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
+  # buildah push $LIMAGE $RIMAGE
+
+  # - name: build-remote
+  # image: docker.io/gautada/builder:3.2.3-r1-aarch64
+  # privileged: true
+  # environment:
+  #   ID_RSA_KEY:
+  #     from_secret: podman.ssh.key
+  #   ID_RSA_KEY_PUB:
+  #     from_secret: podman.ssh.pkey
+  #   ALPINE_TAG: 3.14.2
+  #   SERVER_BRANCH: v2.3.1
+  #   RUNNER_BRANCH: v1.0.0-beta.12
+  #   CLI_BRANCH: v1.4.0
+  #   LIMAGE: localhost/droneci:dev
+  # commands:
+  # - /builder-base 1
   # ssh -o "StrictHostKeyChecking=no" -i /home/bob/.ssh/id_rsa bob@x86-builder.cicd.svc.cluster.local /bin/sleep 1
-  - podman --remote --connection x86_64 build --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag $LIMAGE .
+  # - podman --remote --connection x86_64 build --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag $LIMAGE .
 
 - name: deploy
   image: docker.io/gautada/builder:3.2.3-r1-aarch64
