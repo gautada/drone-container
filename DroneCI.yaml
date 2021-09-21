@@ -3,7 +3,7 @@ type: kubernetes
 name: Continuous Integration
 
 steps:
-- name: build(aarch64) - local
+- name: build-local
   image: docker.io/gautada/builder:3.2.3-r1-aarch64
   privileged: true
   environment:
@@ -15,14 +15,32 @@ steps:
     SERVER_BRANCH: v2.3.1
     RUNNER_BRANCH: v1.0.0-beta.12
     CLI_BRANCH: v1.4.0
-    OCI_CONTAINER: droneci
-    OCI_REPOSITORY: docker://docker.io/gautada
-    OCI_CPU: aarch64
+    LIMAGE: localhost/droneci:dev
+    RIMAGE: docker://docker.io/gautada:v2.3.1-aarch64
   commands:
+  - buildah bud --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag $LIMAGE
   - buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
-  - buildah bud --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag localhost/$OCI_CONTAINER:dev
-  - buildah push localhost/$OCI_CONTAINER:dev $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH-$OCI_CPU
-- name: build(x86_64) - remote
+  - buildah push $LIMAGE $RIMAGE
+
+- name: build-remote
+  image: docker.io/gautada/builder:3.2.3-r1-aarch64
+  privileged: true
+  environment:
+    ID_RSA_KEY:
+      from_secret: podman.ssh.key
+    ID_RSA_KEY_PUB:
+      from_secret: podman.ssh.pkey
+    ALPINE_TAG: 3.14.2
+    SERVER_BRANCH: v2.3.1
+    RUNNER_BRANCH: v1.0.0-beta.12
+    CLI_BRANCH: v1.4.0
+    LIMAGE: localhost/droneci:dev
+  commands:
+  - /builder-base 1
+  # ssh -o "StrictHostKeyChecking=no" -i /home/bob/.ssh/id_rsa bob@x86-builder.cicd.svc.cluster.local /bin/sleep 1
+  - podman --remote --connection x86_64 build --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag $LIMAGE .
+
+- name: deploy
   image: docker.io/gautada/builder:3.2.3-r1-aarch64
   privileged: true
   environment:
@@ -34,19 +52,13 @@ steps:
       from_secret: podman.ssh.key
     ID_RSA_KEY_PUB:
       from_secret: podman.ssh.pkey
-    ALPINE_TAG: 3.14.2
-    SERVER_BRANCH: v2.3.1
-    RUNNER_BRANCH: v1.0.0-beta.12
-    CLI_BRANCH: v1.4.0
-    OCI_CONTAINER: droneci
-    OCI_REPOSITORY: docker://docker.io/gautada
-    OCI_CPU: x86_64
+    LIMAGE: localhost/droneci:dev
+    RIMAGE: docker://docker.io/gautada:v2.3.1-x86_64
   commands:
   - /builder-base 1
-  - ssh -o "StrictHostKeyChecking=no" -i /home/bob/.ssh/id_rsa bob@x86-builder.cicd.svc.cluster.local /bin/sleep 1
-  - podman --remote --connection x86_64 build --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --no-cache --tag localhost/$OCI_CONTAINER:dev .
+  # ssh -o "StrictHostKeyChecking=no" -i /home/bob/.ssh/id_rsa bob@x86-builder.cicd.svc.cluster.local /bin/sleep 1
   - podman --remote --connection x86_64 login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
-  - podman --remote --connection x86_64 push localhost'/'$OCI_CONTAINER':'dev $OCI_REPOSITORY'/'$OCI_CONTAINER':'$SERVER_BRANCH'-'$OCI_CPU
+  - podman --remote --connection x86_64 push $LIMAGE $RIMAGE
 
 - name: package
   image: docker.io/gautada/builder:3.2.3-r1-aarch64
@@ -56,17 +68,16 @@ steps:
       from_secret: username.docker.io
     DOCKER_PASSWORD:
       from_secret: password.docker.io
-    SERVER_BRANCH: v2.3.1
-    OCI_CONTAINER: droneci
-    OCI_REPOSITORY: docker://docker.io/gautada
-    OCI_CPU1: aarch64
-    OCI_CPU2: x86_64
+    MIMAGE: localhost/droneci:man
+    IMAGE1: docker://docker.io/gautada/droneci:v2.3.1-aarch64
+    IMAGE2: docker://docker.io/gautada/droneci:v2.3.1-x86_64
+    RIMAGE: docker://docker.io/gautada/droneci:v2.3.1
   commands:
+  - buildah manifest create $MIMAGE
+  - buildah manifest add $MANIFEST $IMAGE1
+  - buildah manifest add $MANIFEST $IMAGE2
   - buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
-  - buildah manifest create localhost/$OCI_CONTAINER:man
-  - buildah manifest add localhost/$OCI_CONTAINER:man $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH-$OCI_CPU1
-  - buildah manifest add localhost/$OCI_CONTAINER:man $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH-$OCI_CPU2
-  - buildah push localhost/$OCI_CONTAINER:man $OCI_REPOSITORY/$OCI_CONTAINER:$SERVER_BRANCH
+  - buildah push $MIMAGE $RIMAGE
 
 trigger:
   branch:
