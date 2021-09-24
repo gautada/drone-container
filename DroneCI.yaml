@@ -4,7 +4,7 @@ name: Continuous Integration
 
 steps:
 - name: build-arm
-  image: docker.io/gautada/builder:3.2.3-r1
+  image: docker.io/gautada/builder:3.2.3-r1-arm
   privileged: true
   environment:
     DOCKER_USERNAME:
