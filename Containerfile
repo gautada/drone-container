@@ -30,7 +30,8 @@ RUN go test ./...
 ENV CGO_ENABLED=0
 RUN set -e
 RUN set -x
-RUN GOOS=linux GOARCH=arm64 go build -o release/linux/arm64/drone-runner-kube
+# RUN GOOS=linux GOARCH=arm64
+RUN go build -o release/linux/arm64/drone-runner-kube
 
 WORKDIR /usr/lib/go/src/github.com
 RUN git clone --branch $CLI_BRANCH --depth 1 https://github.com/drone/drone-cli.git
@@ -52,20 +53,20 @@ COPY --from=config-droneci /usr/lib/go/src/github.com/drone/cmd/drone-server/dro
 COPY --from=config-droneci /usr/lib/go/src/github.com/drone-runner-kube/release/linux/arm64/drone-runner-kube /usr/bin/drone-runner-kube
 COPY --from=config-droneci /usr/lib/go/bin/drone /usr/bin/drone
 
-RUN mkdir -p /opt/droneci-data
-RUN touch /opt/droneci-data/core.sqlite
-RUN chmod 777 -R /opt/droneci-data
+RUN mkdir -p /opt/drone-data
+RUN touch /opt/drone-data/core.sqlite
+RUN chmod 777 -R /opt/drone-data
  
-ARG USER=droneci
+ARG USER=drone
 RUN addgroup $USER \
  && adduser -D -s /bin/sh -G $USER $USER \
  && echo "$USER:$USER" | chpasswd
  
 USER $USER
 
-WORKDIR /home/droneci
+WORKDIR /home/$USER
 
-RUN ln -s /opt/droneci-data/core.sqlite ~/core.sqlite
+RUN ln -s /opt/drone-data/core.sqlite ~/core.sqlite
 
 # COPY config.env /etc/droneci/config.env
 # CMD ["/usr/bin/drone-server", "--env-file", "/etc/droneci/config.env"]
