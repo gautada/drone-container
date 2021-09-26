@@ -26,7 +26,7 @@ steps:
   commands:
   - /builder-base 5
   
-    - podman --remote --connection arm build --build-arg ALPINE_TAG=3.14.2 --build-arg SERVER_BRANCH=v2.3.1 --build-arg RUNNER_BRANCH=v1.0.0-beta.12 --build-arg CLI_BRANCH=v1.4.0 --file Containerfile --format docker --no-cache --platform linux/arm64/v8 --tag drone:dev .
+  - podman --remote --connection arm build --build-arg ALPINE_TAG=3.14.2 --build-arg SERVER_BRANCH=v2.3.1 --build-arg RUNNER_BRANCH=v1.0.0-beta.12 --build-arg CLI_BRANCH=v1.4.0 --file Containerfile --format docker --no-cache --platform linux/arm64/v8 --tag drone:dev .
   - podman --remote --connection arm tag podman:dev docker.io/gautada/drone:v2.3.1-arm
   - podman --remote --connection arm login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
   - podman --remote --connection arm push docker.io/gautada/drone:v2.3.1-arm
