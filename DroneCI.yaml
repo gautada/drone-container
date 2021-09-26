@@ -4,7 +4,7 @@ name: Continuous Integration
 
 steps:
 - name: build-arm
-  image: docker.io/gautada/builder:3.2.3-r1-arm
+  image: docker.io/gautada/builder:3.2.3-r1
   privileged: true
   environment:
     DOCKER_USERNAME:
@@ -23,25 +23,26 @@ steps:
     SERVER_BRANCH: v2.3.1
     RUNNER_BRANCH: v1.0.0-beta.12
     CLI_BRANCH: v1.4.0
-    LIMAGE: localhost/droneci:dev
-    RIMAGE: docker://docker.io/gautada/droneci:v2.3.1-aarch64
   commands:
   - /builder-base 5
-  - podman --remote --connection arm build --build-arg ALPINE_TAG=3.14.2 --build-arg SERVER_BRANCH=v2.3.1 --build-arg RUNNER_BRANCH=v1.0.0-beta.12 --build-arg CLI_BRANCH=v1.4.0 --file Containerfile --no-cache  --tag drone:dev .
-  - podman --remote --connection arm tag drone:dev docker.io/gautada/drone:v2.3.1-arm
+  
+    - podman --remote --connection arm build --build-arg ALPINE_TAG=3.14.2 --build-arg SERVER_BRANCH=v2.3.1 --build-arg RUNNER_BRANCH=v1.0.0-beta.12 --build-arg CLI_BRANCH=v1.4.0 --file Containerfile --format docker --no-cache --platform linux/arm64/v8 --tag drone:dev .
+  - podman --remote --connection arm tag podman:dev docker.io/gautada/drone:v2.3.1-arm
   - podman --remote --connection arm login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
   - podman --remote --connection arm push docker.io/gautada/drone:v2.3.1-arm
-  - podman --remote --connection x86 build --build-arg ALPINE_TAG=3.14.2  --build-arg SERVER_BRANCH=v2.3.1 --build-arg RUNNER_BRANCH=v1.0.0-beta.12 --build-arg CLI_BRANCH=v1.4.0 --file Containerfile --no-cache  --tag drone:dev .
-  - podman --remote --connection x86 tag drone:dev docker.io/gautada/drone:v2.3.1-x86
+
+  - podman --remote --connection x86 build --build-arg ALPINE_TAG=3.14.2 --build-arg VERSION=3.2.3-r1 --file Containerfile --format docker --no-cache --platform linux/amd64 --tag podman:dev .
+  - podman --remote --connection x86 tag podman:dev docker.io/gautada/drone:v2.3.1-x86
   - podman --remote --connection x86 login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
   - podman --remote --connection x86 push docker.io/gautada/drone:v2.3.1-x86
-  - podman --remote --connection arm manifest create drone:man
-  - podman --remote --connection arm manifest add drone:man docker.io/gautada/drone:v2.3.1-arm
-  - podman --remote --connection arm manifest add drone:man docker.io/gautada/drone:v2.3.1-x86
-  - podman --remote --connection arm tag drone:man docker.io/gautada/drone:v2.3.1
-  - podman --remote --connection arm login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
+
+  - podman --remote --connection arm manifest create podman:man
+  - podman --remote --connection arm manifest add podman:man docker.io/gautada/drone:v2.3.1-arm
+  - podman --remote --connection arm manifest add podman:man docker.io/gautada/drone:v2.3.1-x86
+  - podman --remote --connection arm tag podman:man docker.io/gautada/drone:v2.3.1
+  - podman --remote --connection arm login --username=gautada --password=$DOCKER_PASSWORD docker.io
   - podman --remote --connection arm push docker.io/gautada/drone:v2.3.1
-  - podman --remote --connection arm rmi drone:man
+  - podman --remote --connection arm rmi podman:man
 
 trigger:
   branch:
