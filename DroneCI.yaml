@@ -58,7 +58,7 @@ steps:
   - podman --remote --connection arm login --username=$DOCKERIO_USERNAME --password=$DOCKERIO_PASSWORD docker.io
   - podman --remote --connection arm push docker.io/gautada/drone:arm-$SERVER_BRANCH
 
-- name: arm-push
+- name: x86-push
   image: docker.io/gautada/builder:3.2.3-r1
   privileged: true
   environment:
