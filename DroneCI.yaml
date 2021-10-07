@@ -4,7 +4,7 @@ name: Continuous Integration
 
 steps:
 - name: arm-build
-  image: docker.io/gautada/builder:3.2.3-r1
+  image: docker.io/gautada/builder:arm-3.2.3-r1
   privileged: true
   environment:
     PODMAN_KEY:
@@ -20,7 +20,7 @@ steps:
   - podman --remote --connection arm build --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --format docker --no-cache --platform linux/arm64/v8 --tag drone:dev .
 
 - name: x86-build
-  image: docker.io/gautada/builder:3.2.3-r1
+  image: docker.io/gautada/builder:arm-3.2.3-r1
   privileged: true
   environment:
     DOCKERIO_USERNAME:
@@ -40,7 +40,7 @@ steps:
   - podman --remote --connection x86 build --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --format docker --no-cache --platform linux/arm64/v8 --tag drone:dev .
 
 - name: arm-push
-  image: docker.io/gautada/builder:3.2.3-r1
+  image: docker.io/gautada/builder:arm-3.2.3-r1
   privileged: true
   environment:
     DOCKERIO_USERNAME:
@@ -59,7 +59,7 @@ steps:
   - podman --remote --connection arm push docker.io/gautada/drone:arm-$SERVER_BRANCH
 
 - name: x86-push
-  image: docker.io/gautada/builder:3.2.3-r1
+  image: docker.io/gautada/builder:arm-3.2.3-r1
   privileged: true
   environment:
     DOCKERIO_USERNAME:
@@ -78,7 +78,7 @@ steps:
   - podman --remote --connection x86 push docker.io/gautada/drone:x86-$SERVER_BRANCH
 
 - name: manifest-create
-  image: docker.io/gautada/builder:3.2.3-r1
+  image: docker.io/gautada/builder:arm-3.2.3-r1
   privileged: true
   environment:
     DOCKERIO_USERNAME:
@@ -100,7 +100,7 @@ steps:
   - podman --remote --connection arm push docker.io/gautada/drone:$SERVER_BRANCH
   
 - name: clean
-  image: docker.io/gautada/builder:3.2.3-r1
+  image: docker.io/gautada/builder:arm-3.2.3-r1
   privileged: true
   environment:
     DOCKERIO_USERNAME:
