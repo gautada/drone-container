@@ -33,7 +33,7 @@ steps:
     CLI_BRANCH: v1.4.0
   commands:
   - /builder-base 5
-  - podman --remote --connection arm build --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --format docker --no-cache --platform linux/amd64 --tag drone:dev .
+  - podman --remote --connection arm build --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --format docker --no-cache --tag drone:dev .
   
 - name: arm-push
   image: docker.io/gautada/builder:arm-3.2.3-r1
