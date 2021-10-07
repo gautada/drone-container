@@ -23,10 +23,6 @@ steps:
   image: docker.io/gautada/builder:arm-3.2.3-r1
   privileged: true
   environment:
-    DOCKERIO_USERNAME:
-      from_secret: username.docker.io
-    DOCKERIO_PASSWORD:
-      from_secret: password.docker.io
     PODMAN_KEY:
       from_secret: podman.key
     PODMAN_CERT:
@@ -37,8 +33,8 @@ steps:
     CLI_BRANCH: v1.4.0
   commands:
   - /builder-base 5
-  - podman --remote --connection x86 build --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --format docker --no-cache --platform linux/arm64/v8 --tag drone:dev .
-
+  - podman --remote --connection arm build --build-arg ALPINE_TAG=$ALPINE_TAG --build-arg SERVER_BRANCH=$SERVER_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --format docker --no-cache --platform linux/amd64 --tag drone:dev .
+  
 - name: arm-push
   image: docker.io/gautada/builder:arm-3.2.3-r1
   privileged: true
