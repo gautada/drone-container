@@ -1,0 +1,12 @@
+#!/bin/ash
+
+# Launch crond to prune the tree
+# ---------- [ CROND ] ----------
+/usr/bin/sudo /usr/sbin/crond -b
+
+# ---------- [ DRONE ] ----------
+# Conditional launch
+# server
+# runner
+# cli - auto lookup api key
+

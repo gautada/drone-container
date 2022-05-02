@@ -1,6 +1,22 @@
 # droneci
 
-[Drone](https://www.drone.io) is a self-service Continuous Integration platform for busy development teams.
+[Drone](https://www.drone.io) is a self-service Continuous Integration platform for busy development teams. This container contains three drone compoments:
+
+- [Drone](https://github.com/harness/drone) is a continuous delivery system built on container technology. Drone uses a simple YAML build file, to define and execute build pipelines inside Docker containers.
+- The [kubernetes runner](https://github.com/drone-runners/drone-runner-kube) executes pipelines inside Kubernetes pods. This runner is an alternative to the docker runner and is optimize for teams running Drone on Kubernetes. This requires Drone server 1.6.0 or higher.
+- [Command line client](https://github.com/harness/drone-cli) for the Drone continuous integration server.
+
+## Container
+
+### Versions
+
+### Build
+
+Drone is a part of the core CICD system and therefore may need to be built manually
+
+```
+export DRONE_VERSION="2.11.1" ; DRONE_BRANCH=v"$DRONE_VERSION"; export RUNNER_VERSION="1.0.0-rc.3" ; export RUNNER_BRANCH=v"$RUNNER_VERSION" ; export CLI_VERSION="1.5.0" ; export CLI_BRANCH=v"$CLI_VERSION" ; docker build --build-arg DRONE_BRANCH=$DRONE_BRANCH --build-arg RUNNER_BRANCH=$RUNNER_BRANCH --build-arg CLI_BRANCH=$CLI_BRANCH --file Containerfile --label revision="$(git rev-parse HEAD)" --label version="$(date +%Y.%m.%d)" --no-cache --tag drone:dev .
+```
 
 [Repository](https://github.com/drone/drone)
 
