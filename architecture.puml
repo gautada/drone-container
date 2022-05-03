@@ -1,0 +1,21 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Container_Ext(github, "Github", "Source Code Manager", "Git Service")
+Container_Ext(docker, "Docker", "Container Repository", "Container Repository")
+
+Container(podman, "Podman", "Container System", "OCI Container API")
+Container(drone, "Drone", "Continuous Build", "Continuous Build System")
+Container(gitea, "Gitea", "Source Code Manager", "Local/Private Source Code and Configuration Information")
+Container(microk8s, "Microk8s", "Kubernetes Container Platform", "Local kubernetes platform")
+
+Lay_D(github, gitea)
+
+Rel_R(github, drone, "Triggers")
+Rel_R(gitea, drone, "Triggers")
+Rel_R(drone, microk8s, "Deploys")
+Rel_D(drone, podman, "Uses")
+Rel_R(podman, docker, "Releases")
+
+@enduml
