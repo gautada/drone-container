@@ -1,14 +1,13 @@
 @startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+System_Ext(github, "Github", "Source Code Manager", "Git Service")
+System_Ext(docker, "Docker", "Container Repository", "Container Repository")
 
-Container_Ext(github, "Github", "Source Code Manager", "Git Service")
-Container_Ext(docker, "Docker", "Container Repository", "Container Repository")
-
-Container(podman, "Podman", "Container System", "OCI Container API")
-Container(drone, "Drone", "Continuous Build", "Continuous Build System")
-Container(gitea, "Gitea", "Source Code Manager", "Local/Private Source Code and Configuration Information")
-Container(microk8s, "Microk8s", "Kubernetes Container Platform", "Local kubernetes platform")
+System(podman, "Podman", "Container System", "OCI Container API")
+System(drone, "Drone", "Continuous Build", "Continuous Build System")
+System(gitea, "Gitea", "Source Code Manager", "Local/Private Source Code and Configuration Information")
+System(microk8s, "Microk8s", "Kubernetes Container Platform", "Local kubernetes platform")
 
 Lay_D(github, gitea)
 
@@ -18,4 +17,25 @@ Rel_R(drone, microk8s, "Deploys")
 Rel_D(drone, podman, "Uses")
 Rel_R(podman, docker, "Releases")
 
+@enduml
+
+
+
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title "Container Diagram - Drone"
+Container_Boundary(drone, "Drone Continuous Build") {
+ Component(scheduler, "CROND", "Scheduler", "The crond system scheduler")
+ Component(server, "Server", "Application Server", "The UI and the app server for CICD")
+ Component(runner, "Runner", "Worker Node", "The runner is a worker node of the CICD system")
+ Component(cli, "CLI", "Administration", "Low level dirce administration (CLI) interface")
+ Component(podman, "Podman", "Container System", "OCI Container API")
+ 
+ Rel_R(scheduler, server, "Administers?")
+ Rel_R(cli, server, "Administers")
+ Rel_R(server, worker, "Executs")
+}
+Container(logging, "Logging Service", "...", "...")
+Container(ha, "High Availability", "...", "...")
 @enduml

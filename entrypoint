@@ -1,12 +1,18 @@
 #!/bin/ash
 
+## [ENTRYPOINT](https://docs.docker.com/engine/reference/builder/#entrypoint)
+## An ENTRYPOINT allows you to configure a container that will run as an executable.
+
 # Launch crond to prune the tree
 # ---------- [ CROND ] ----------
 /usr/bin/sudo /usr/sbin/crond -b
 
 # ---------- [ DRONE ] ----------
-# Conditional launch
-# server
-# runner
-# cli - auto lookup api key
-
+if [ "server" == "$1" ] ; then
+ /usr/bin/drone-server --env-file /etc/drone/config.env
+elif [ "runner" == "$1" ] ; then
+ /usr/bin/drone-runner-kube daemon
+ echo "$1"
+else
+ exec $@
+fi
