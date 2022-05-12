@@ -3,11 +3,17 @@ ARG PODMAN_VERSION=3.4.7
 
 FROM docker.io/gautada/alpine:$ALPINE_VERSION as build-drone
 
-ARG DRONE_BRANCH=v2.11.1
-ARG EXEC_RUNNER_BRANCH=v1.0.0-beta.9
-ARG DOCKER_RUNNER_BRANCH=v1.8.1
-ARG KUBE_RUNNER_BRANCH=v1.0.0-rc.3
-ARG CLI_BRANCH=v0.0.0
+ARG DRONE_SERVER_VERSION=2.11.1
+ARG DRONE_CLI_VERSION=2.11.1
+ARG DRONE_RUNNER_DOCKER_VERSION=2.11.1
+ARG DRONE_RUNNER_EXEC_VERSION=2.11.1
+ARG DRONE_RUNNER_KUBE_VERSION=2.11.1
+
+ARG DRONE_SERVER_BRANCH=v"$DRONE_SERVER_VERSION"
+ARG DRONE_CLI_BRANCH=v"$DRONE_CLI_VERSION"
+ARG DRONE_RUNNER_DOCKER_BRANCH=v"$DRONE_RUNNER_DOCKER_VERSION"
+ARG DRONE_RUNNER_EXEC_BRANCH=v"$DRONE_RUNNER_EXEC_VERSION"
+ARG DRONE_RUNNER_KUBE_BRANCH=v"$DRONE_RUNNER_KUBE_VERSION"
 
 USER root
 WORKDIR /
@@ -16,15 +22,16 @@ RUN apk add --no-cache build-base git go
 RUN git config --global advice.detachedHead false
 
 RUN mkdir /usr/lib/go/src/github.com
-WORKDIR /usr/lib/go/src/github.com
-RUN git clone --branch $DRONE_BRANCH --depth 1 https://github.com/drone/drone.git
-WORKDIR /usr/lib/go/src/github.com/drone/cmd/drone-server
-RUN go build
 
 WORKDIR /usr/lib/go/src/github.com
-RUN git clone --branch $EXEC_RUNNER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-exec.git
-WORKDIR /usr/lib/go/src/github.com/drone-runner-exec
-RUN go build -o release/linux/arm64/drone-runner-exec
+RUN git clone --branch $DRONE_SERVER_BRANCH --depth 1 https://github.com/drone/drone.git
+WORKDIR /usr/lib/go/src/github.com/drone/cmd/drone-server
+RUN go build -o release/linux/arm64/drone-server
+
+WORKDIR /usr/lib/go/src/github.com
+RUN git clone --branch $DRONE_CLI_BRANCH --depth 1 https://github.com/drone/drone-cli.git
+WORKDIR /usr/lib/go/src/github.com/drone-cli
+RUN go build -o release/linux/arm64/drone-cli
 
 WORKDIR /usr/lib/go/src/github.com
 RUN git clone --branch $DOCKER_RUNNER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-docker.git
@@ -32,14 +39,16 @@ WORKDIR /usr/lib/go/src/github.com/drone-runner-docker
 RUN go build -o release/linux/arm64/drone-runner-docker
 
 WORKDIR /usr/lib/go/src/github.com
+RUN git clone --branch $EXEC_RUNNER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-exec.git
+WORKDIR /usr/lib/go/src/github.com/drone-runner-exec
+RUN go build -o release/linux/arm64/drone-runner-exec
+
+WORKDIR /usr/lib/go/src/github.com
 RUN git clone --branch $KUBE_RUNNER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-kube.git
 WORKDIR /usr/lib/go/src/github.com/drone-runner-kube
 RUN go build -o release/linux/arm64/drone-runner-kube
 
-WORKDIR /usr/lib/go/src/github.com
-RUN git clone --branch $CLI_BRANCH --depth 1 https://github.com/drone/drone-cli.git
-WORKDIR /usr/lib/go/src/github.com/drone-cli
-RUN go install ./...
+
 
 #
 # ------------------------------------------------------------- CONTAINER
