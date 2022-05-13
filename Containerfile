@@ -4,10 +4,10 @@ ARG PODMAN_VERSION=3.4.7
 FROM docker.io/gautada/alpine:$ALPINE_VERSION as build-drone
 
 ARG DRONE_SERVER_VERSION=2.11.1
-ARG DRONE_CLI_VERSION=2.11.1
-ARG DRONE_RUNNER_DOCKER_VERSION=2.11.1
-ARG DRONE_RUNNER_EXEC_VERSION=2.11.1
-ARG DRONE_RUNNER_KUBE_VERSION=2.11.1
+ARG DRONE_CLI_VERSION=1.5.0
+ARG DRONE_RUNNER_DOCKER_VERSION=1.8.1
+ARG DRONE_RUNNER_EXEC_VERSION=1.0.0-beta.9
+ARG DRONE_RUNNER_KUBE_VERSION=1.0.0-rc.3
 
 ARG DRONE_SERVER_BRANCH=v"$DRONE_SERVER_VERSION"
 ARG DRONE_CLI_BRANCH=v"$DRONE_CLI_VERSION"
@@ -32,6 +32,8 @@ WORKDIR /usr/lib/go/src/github.com
 RUN git clone --branch $DRONE_CLI_BRANCH --depth 1 https://github.com/drone/drone-cli.git
 WORKDIR /usr/lib/go/src/github.com/drone-cli
 RUN go build -o release/linux/arm64/drone-cli
+# Not sure why CLI is different thant the others
+# RUN go install ./...
 
 WORKDIR /usr/lib/go/src/github.com
 RUN git clone --branch $DRONE_RUNNER_DOCKER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-docker.git

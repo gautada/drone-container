@@ -3,9 +3,12 @@
 [Drone](https://www.drone.io) is a self-service Continuous Integration platform for busy development teams. This container contains three drone compoments:
 
 - [Drone](https://github.com/harness/drone) is a continuous delivery system built on container technology. Drone uses a simple YAML build file, to define and execute build pipelines inside Docker containers.
-- The [kubernetes runner](https://github.com/drone-runners/drone-runner-kube) executes pipelines inside Kubernetes pods. This runner is an alternative to the docker runner and is optimize for teams running Drone on Kubernetes. This requires Drone server 1.6.0 or higher.
 - [Command line client](https://github.com/harness/drone-cli) for the Drone continuous integration server.
-
+- [Runners](https://github.com/drone-runners) This container contains multiple runners.
+ - Docker - Lauches a docker container
+ - Exec - Runs locally on the drone host
+ - Kube - Runs a pod in the k8s cluster
+ 
 ## Container
 
 ### Versions
