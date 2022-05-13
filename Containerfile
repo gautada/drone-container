@@ -70,7 +70,7 @@ VOLUME /opt/drone
 
 COPY --from=build-drone /etc/localtime /etc/localtime
 COPY --from=build-drone /etc/timezone  /etc/timezone
-COPY --from=build-drone /usr/lib/go/src/github.com/drone/cmd/drone-server/drone-server /usr/bin/drone-server
+COPY --from=build-drone /usr/lib/go/src/github.com/drone/cmd/drone-server/release/linux/arm64/drone-server /usr/bin/drone-server
 COPY --from=build-drone /usr/lib/go/src/github.com/drone-runner-exec/release/linux/arm64/drone-runner-exec /usr/bin/drone-runner-exec
 COPY --from=build-drone /usr/lib/go/src/github.com/drone-runner-docker/release/linux/arm64/drone-runner-docker /usr/bin/drone-runner-docker
 COPY --from=build-drone /usr/lib/go/src/github.com/drone-runner-kube/release/linux/arm64/drone-runner-kube /usr/bin/drone-runner-kube
