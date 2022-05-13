@@ -17,7 +17,7 @@ steps:
     DRONE_RUNNER_EXEC_VERSION: 1.0.0-beta.9
     DRONE_RUNNER_KUBE_VERSION: 1.0.0-rc.3
   commands:
-  - podman build --build-arg ALPINE_VERSION=$ALPINE_VERSION --build-arg PODMAN_VERSION=$PODMAN_VERSION --build-arg DRONE_SERVER_VERSION=$DRONE_SERVER_VERSION --build-arg DRONE_CLI_VERSION=$DRONE_CLI_VERSION --build-arg DRONE_RUNNER_DOCKER_VERSION=$DRONE_RUNNER_DOCKER_VERSION --build-arg DRONE_RUNNER_EXEC_VERSION=$DRONE_RUNNER_EXEC_VERSION --build-arg DRONE_RUNNER_KUBE_VERSION=$DRONE_RUNNER_KUBE_VERSION --file Containerfile --label revision="$(git rev-parse HEAD)" --label version="$(date +%Y.%m.%d)" --no-cache --tag podman:build .
+  - podman build --build-arg ALPINE_VERSION=$ALPINE_VERSION --build-arg PODMAN_VERSION=$PODMAN_VERSION --build-arg DRONE_SERVER_VERSION=$DRONE_SERVER_VERSION --build-arg DRONE_CLI_VERSION=$DRONE_CLI_VERSION --build-arg DRONE_RUNNER_DOCKER_VERSION=$DRONE_RUNNER_DOCKER_VERSION --build-arg DRONE_RUNNER_EXEC_VERSION=$DRONE_RUNNER_EXEC_VERSION --build-arg DRONE_RUNNER_KUBE_VERSION=$DRONE_RUNNER_KUBE_VERSION --file Containerfile --label revision="$(git rev-parse HEAD)" --label version="$(date +%Y.%m.%d)" --no-cache --tag drone:build .
 
 - name: publish
   environment:
