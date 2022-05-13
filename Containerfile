@@ -31,9 +31,9 @@ RUN go build -o release/linux/arm64/drone-server
 WORKDIR /usr/lib/go/src/github.com
 RUN git clone --branch $DRONE_CLI_BRANCH --depth 1 https://github.com/drone/drone-cli.git
 WORKDIR /usr/lib/go/src/github.com/drone-cli
-RUN go build -o release/linux/arm64/drone-cli
+# RUN go build -o release/linux/arm64/drone-cli
 # Not sure why CLI is different thant the others
-# RUN go install ./...
+RUN go install ./...
 
 WORKDIR /usr/lib/go/src/github.com
 RUN git clone --branch $DRONE_RUNNER_DOCKER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-docker.git
