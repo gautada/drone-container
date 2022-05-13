@@ -34,17 +34,17 @@ WORKDIR /usr/lib/go/src/github.com/drone-cli
 RUN go build -o release/linux/arm64/drone-cli
 
 WORKDIR /usr/lib/go/src/github.com
-RUN git clone --branch $DOCKER_RUNNER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-docker.git
+RUN git clone --branch $DRONE_RUNNER_DOCKER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-docker.git
 WORKDIR /usr/lib/go/src/github.com/drone-runner-docker
 RUN go build -o release/linux/arm64/drone-runner-docker
 
 WORKDIR /usr/lib/go/src/github.com
-RUN git clone --branch $EXEC_RUNNER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-exec.git
+RUN git clone --branch $DRONE_RUNNER_EXEC_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-exec.git
 WORKDIR /usr/lib/go/src/github.com/drone-runner-exec
 RUN go build -o release/linux/arm64/drone-runner-exec
 
 WORKDIR /usr/lib/go/src/github.com
-RUN git clone --branch $KUBE_RUNNER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-kube.git
+RUN git clone --branch $DRONE_RUNNER_KUBE_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-kube.git
 WORKDIR /usr/lib/go/src/github.com/drone-runner-kube
 RUN go build -o release/linux/arm64/drone-runner-kube
 
@@ -94,5 +94,5 @@ RUN /bin/mkdir -p /opt/$USER \
  # && /bin/touch /opt/$USER/$USER.sqlite \
  
 USER $USER
-# WORKDIR /home/$USER
+# Not home so the core.sqlite database is accessable via volume
 WORKDIR /opt/drone
