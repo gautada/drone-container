@@ -1,7 +1,6 @@
-ARG ALPINE_VERSION=3.15.4
-FROM docker.io/gautada/alpine:$ALPINE_VERSION as build-drone
-
 ARG PODMAN_VERSION=3.4.7
+FROM gautada/podman:$PODMAN_VERSION as build-drone
+
 ARG DRONE_SERVER_VERSION=2.11.1
 ARG DRONE_CLI_VERSION=1.5.0
 ARG DRONE_RUNNER_DOCKER_VERSION=1.8.1
@@ -53,7 +52,7 @@ RUN go build -o release/linux/arm64/drone-runner-kube
 
 #
 # ------------------------------------------------------------- CONTAINER
-FROM docker.io/gautada/podman:$PODMAN_VERSION
+FROM gautada/podman:$PODMAN_VERSION
 
 USER root
 WORKDIR /
