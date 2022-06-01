@@ -1,6 +1,15 @@
 ARG PODMAN_VERSION=3.4.7
-FROM gautada/podman:$PODMAN_VERSION as build-drone
+# ╭―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――╮
+# │                                                                           │
+# │ STAGE 1: src-drone - Build drone from source and several (Docker, Exec,   |
+# | Kube) runners also from source.                                           │
+# │                                                                           │
+# ╰―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――╯
+FROM gautada/podman:$PODMAN_VERSION as src-drone
 
+# ╭――――――――――――――――――――╮
+# │ VERSION(S)         │
+# ╰――――――――――――――――――――╯
 ARG DRONE_SERVER_VERSION=2.11.1
 ARG DRONE_CLI_VERSION=1.5.0
 ARG DRONE_RUNNER_DOCKER_VERSION=1.8.1
@@ -13,72 +22,95 @@ ARG DRONE_RUNNER_DOCKER_BRANCH=v"$DRONE_RUNNER_DOCKER_VERSION"
 ARG DRONE_RUNNER_EXEC_BRANCH=v"$DRONE_RUNNER_EXEC_VERSION"
 ARG DRONE_RUNNER_KUBE_BRANCH=v"$DRONE_RUNNER_KUBE_VERSION"
 
+# ╭――――――――――――――――――――╮
+# │ CHANGE UPS USER    │
+# ╰――――――――――――――――――――╯
 USER root
 WORKDIR /
 
+# ╭――――――――――――――――――――╮
+# │ PACKAGES           │
+# ╰――――――――――――――――――――╯
 RUN apk add --no-cache build-base git go
 RUN git config --global advice.detachedHead false
 
-RUN mkdir /usr/lib/go/src/github.com
-
+# ╭――――――――――――――――――――╮
+# │ SOURCE             │
+# ╰――――――――――――――――――――╯
+RUN mkdir -p /usr/lib/go/src/github.com
 WORKDIR /usr/lib/go/src/github.com
 RUN git clone --branch $DRONE_SERVER_BRANCH --depth 1 https://github.com/drone/drone.git
+RUN git clone --branch $DRONE_CLI_BRANCH --depth 1 https://github.com/drone/drone-cli.git
+RUN git clone --branch $DRONE_RUNNER_DOCKER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-docker.git
+RUN git clone --branch $DRONE_RUNNER_EXEC_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-exec.git
+RUN git clone --branch $DRONE_RUNNER_KUBE_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-kube.git
+
+# ╭――――――――――――――――――――╮
+# │ BUILD              │
+# ╰――――――――――――――――――――╯
 WORKDIR /usr/lib/go/src/github.com/drone/cmd/drone-server
 RUN go build -o release/linux/arm64/drone-server
-
-WORKDIR /usr/lib/go/src/github.com
-RUN git clone --branch $DRONE_CLI_BRANCH --depth 1 https://github.com/drone/drone-cli.git
 WORKDIR /usr/lib/go/src/github.com/drone-cli
 # RUN go build -o release/linux/arm64/drone-cli
 # Not sure why CLI is different thant the others
 RUN go install ./...
-
-WORKDIR /usr/lib/go/src/github.com
-RUN git clone --branch $DRONE_RUNNER_DOCKER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-docker.git
 WORKDIR /usr/lib/go/src/github.com/drone-runner-docker
 RUN go build -o release/linux/arm64/drone-runner-docker
-
-WORKDIR /usr/lib/go/src/github.com
-RUN git clone --branch $DRONE_RUNNER_EXEC_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-exec.git
 WORKDIR /usr/lib/go/src/github.com/drone-runner-exec
 RUN go build -o release/linux/arm64/drone-runner-exec
-
-WORKDIR /usr/lib/go/src/github.com
-RUN git clone --branch $DRONE_RUNNER_KUBE_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-kube.git
 WORKDIR /usr/lib/go/src/github.com/drone-runner-kube
 RUN go build -o release/linux/arm64/drone-runner-kube
 
 
 
-#
-# ------------------------------------------------------------- CONTAINER
+
+# ╭――――――――――――――――-------------------------------------------------------――╮
+# │                                                                         │
+# │ STAGE 2: drone-container                                                │
+# │                                                                         │
+# ╰―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――╯
 FROM gautada/podman:$PODMAN_VERSION
 
+# ╭――――――――――――――――――――╮
+# │ CHANGE UPS USER    │
+# ╰――――――――――――――――――――╯
 USER root
 WORKDIR /
 
+# ╭――――――――――――――――――――╮
+# │ METADATA           │
+# ╰――――――――――――――――――――╯
 LABEL source="https://github.com/gautada/drone-container.git"
 LABEL maintainer="Adam Gautier <adam@gautier.org>"
 LABEL description="This container is a a drone CI installation."
 
+# ╭――――――――――――――――――――╮
+# │ PORTS              │
+# ╰――――――――――――――――――――╯
 EXPOSE 8080
 EXPOSE 3000
 
-VOLUME /opt/drone
-
-COPY --from=build-drone /etc/localtime /etc/localtime
-COPY --from=build-drone /etc/timezone  /etc/timezone
-COPY --from=build-drone /usr/lib/go/src/github.com/drone/cmd/drone-server/release/linux/arm64/drone-server /usr/bin/drone-server
-COPY --from=build-drone /usr/lib/go/src/github.com/drone-runner-exec/release/linux/arm64/drone-runner-exec /usr/bin/drone-runner-exec
+# ╭――――――――――――――――――――╮
+# │ APPLICATION        │
+# ╰――――――――――――――――――――╯
+COPY --from=src-drone /usr/lib/go/src/github.com/drone/cmd/drone-server/release/linux/arm64/drone-server /usr/bin/drone-server
+COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-exec/release/linux/arm64/drone-runner-exec /usr/bin/drone-runner-exec
 COPY --from=build-drone /usr/lib/go/src/github.com/drone-runner-docker/release/linux/arm64/drone-runner-docker /usr/bin/drone-runner-docker
-COPY --from=build-drone /usr/lib/go/src/github.com/drone-runner-kube/release/linux/arm64/drone-runner-kube /usr/bin/drone-runner-kube
-COPY --from=build-drone /usr/lib/go/bin/drone /usr/bin/drone
-
+COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-kube/release/linux/arm64/drone-runner-kube /usr/bin/drone-runner-kube
+COPY --from=src-drone /usr/lib/go/bin/drone /usr/bin/drone
 COPY 20-entrypoint.sh /etc/entrypoint.d/20-entrypoint.sh
+RUN mkdir -p /etc/drone \
+ && ln -s /opt/drone/server.env /etc/drone/server.env \
+ && ln -s /opt/drone/runner-docker.env /etc/drone/runner-docker.env \
+ && ln -s /opt/drone/runner-exec.env /etc/drone/runner-exec.env \
+ && ln -s /opt/drone/runner-kube.env /etc/drone/runner-kube.env \
+ && ln -s /tmp/podman-run-1002/podman/podman.sock /var/run/docker.sock
 
-RUN ln -s /tmp/podman-run-1002/podman/podman.sock /var/run/docker.sock
-
+# ╭――――――――――――――――――――╮
+# │ USER               │
+# ╰――――――――――――――――――――╯
 ARG USER=drone
+VOLUME /opt/$USER
 RUN /bin/mkdir -p /opt/$USER \
  && /usr/sbin/addgroup $USER \
  && /usr/sbin/adduser -D -s /bin/ash -G $USER $USER \
