@@ -98,7 +98,7 @@ COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-exec/release/linux
 COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-docker/release/linux/arm64/drone-runner-docker /usr/bin/drone-runner-docker
 COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-kube/release/linux/arm64/drone-runner-kube /usr/bin/drone-runner-kube
 COPY --from=src-drone /usr/lib/go/bin/drone /usr/bin/drone
-COPY 20-entrypoint.sh /etc/entrypoint.d/20-entrypoint.sh
+COPY 10-entrypoint.sh /etc/entrypoint.d/10-entrypoint.sh
 RUN mkdir -p /etc/drone \
  && ln -s /opt/drone/server.env /etc/drone/server.env \
  && ln -s /opt/drone/runner-docker.env /etc/drone/runner-docker.env \

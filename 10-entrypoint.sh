@@ -5,6 +5,11 @@
 # if [ -z "$ENTRYPOINT_PARAMS" ] ; then
 if [ -z "$ENTRYPOINT_PARAMS" ] ; then
  echo "---------- [ CONTINUOUS INTEGRATION(drone) ] ----------"
+ TEST="$(/usr/bin/pgrep /usr/bin/podman)"
+ if [ $? -eq 1 ] ; then
+  echo "drone-runner-exec..."
+  /usr/bin/podman --log-level fatal system service --time 0 &
+ fi
  TEST="$(/usr/bin/pgrep drone-runner-exec)"
  if [ $? -eq 1 ] ; then
   echo "drone-runner-exec..."
