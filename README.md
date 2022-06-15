@@ -135,10 +135,19 @@ ff4
 
 ## Notes
 
+These note are for the drone contaienr and general build notes as well.  
+
 ### Docker Format
 
 **Podman** builds within **drone** require the format to be set via the `--format` flag. To eliminate the warning use `--format docker`.
  
  ```
 podman build --build-arg ALPINE_VERSION=$ALPINE_VERSION --build-arg POSTGRES_VERSION=$POSTGRES_VERSION --file Containerfile --format docker --label revision="$(git rev-parse HEAD)" --label version="$(date +%Y.%m.%d)" --no-cache --tag postgres:build .
+```
+
+### git - Specific source code for a tag.
+
+```
+git config --global advice.detachedHead false
+git clone --branch $POSTGRES_BRANCH --depth 1 https://github.com/postgres/postgres.git
 ```
