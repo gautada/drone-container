@@ -131,3 +131,14 @@ drone orgsecret add gautada ID_RSA_KEY = "..."
 drone orgsecret add gautada ID_RSA_KEY_PUB = "..."
 
 ff4
+
+
+## Notes
+
+### Docker Format
+
+**Podman** builds within **drone** require the format to be set via the `--format` flag. To eliminate the warning use `--format docker`.
+ 
+ ```
+podman build --build-arg ALPINE_VERSION=$ALPINE_VERSION --build-arg POSTGRES_VERSION=$POSTGRES_VERSION --file Containerfile --format docker --label revision="$(git rev-parse HEAD)" --label version="$(date +%Y.%m.%d)" --no-cache --tag postgres:build .
+```
