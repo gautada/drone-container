@@ -1,11 +1,12 @@
-ARG PODMAN_VERSION=3.4.7
+ARG ALPINE_VERSION=3.16.0
+
 # ╭―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――╮
 # │                                                                           │
 # │ STAGE 1: src-drone - Build drone from source and several (Docker, Exec,   |
 # | Kube) runners also from source.                                           │
 # │                                                                           │
 # ╰―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――╯
-FROM gautada/podman:$PODMAN_VERSION as src-drone
+FROM gautada/alpine:$ALPINE_VERSION as src-drone
 
 # ╭――――――――――――――――――――╮
 # │ VERSION(S)         │
@@ -65,7 +66,7 @@ RUN go build -o release/linux/arm64/drone-runner-kube
 # │ STAGE 2: drone-container                                                │
 # │                                                                         │
 # ╰―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――╯
-FROM gautada/podman:$PODMAN_VERSION
+FROM gautada/alpine:$ALPINE_VERSION
 
 # ╭――――――――――――――――――――╮
 # │ CHANGE UPS USER    │
@@ -81,14 +82,48 @@ LABEL maintainer="Adam Gautier <adam@gautier.org>"
 LABEL description="This container is a a drone CI installation."
 
 # ╭――――――――――――――――――――╮
+# │ USER               │
+# ╰――――――――――――――――――――╯
+ARG UID=1001
+ARG GID=1001
+ARG USER=drone
+
+RUN /usr/sbin/addgroup -g $GID $USER \
+ && /usr/sbin/adduser -D -G $USER -s /bin/ash -u $UID $USER \
+ && /usr/sbin/usermod -aG wheel $USER \
+ && /bin/echo "$USER:$USER" | chpasswd
+ 
+RUN /bin/touch /var/log/drone-server.log \
+ && /bin/touch /var/log/drone-runner-exec.log \
+ && /bin/touch /var/log/drone-runner-docker.log \
+ && /bin/touch /var/log/drone-runner-kube.log
+ 
+RUN /bin/mkdir -p /opt/$USER \
+ && /bin/chown $USER:$USER -R /opt/$USER /var/log/drone-*.log
+ 
+ 
+# ╭――――――――――――――――――――╮
 # │ PORTS              │
 # ╰――――――――――――――――――――╯
 EXPOSE 8080
 EXPOSE 3000
 
 # ╭――――――――――――――――――――╮
+# │ ENTRYPOINT         │
+# ╰――――――――――――――――――――╯
+COPY 10-ep-container.sh /etc/container/entrypoint.d/10-ep-container.sh
+
+# ╭――――――――――――――――――――╮
+# │ BACKUP             │
+# ╰――――――――――――――――――――╯
+# COPY container-backup.fnc /etc/container/backup.fnc
+
+# ╭――――――――――――――――――――╮
 # │ APPLICATION        │
 # ╰――――――――――――――――――――╯
+ARG PODMAN_VERSION
+ARG PODMAN_PACKAGE="$PODMAN_VERSION"-r1
+RUN /sbin/apk add --no-cache buildah podman=$PODMAN_PACKAGE fuse-overlayfs slirp4netns
 COPY --from=src-drone /usr/lib/go/src/github.com/drone/cmd/drone-server/release/linux/arm64/drone-server /usr/bin/drone-server
 COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-exec/release/linux/arm64/drone-runner-exec /usr/bin/drone-runner-exec
 COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-docker/release/linux/arm64/drone-runner-docker /usr/bin/drone-runner-docker
@@ -102,29 +137,16 @@ RUN mkdir -p /etc/drone \
  && ln -s /opt/drone/runner-kube.env /etc/drone/runner-kube.env \
  && ln -s /tmp/podman-run-1002/podman/podman.sock /var/run/docker.sock
 
+RUN /usr/sbin/usermod --add-subuids 100000-165535 $USER \
+ && /usr/sbin/usermod --add-subgids 100000-165535 $USER
+
 # ╭――――――――――――――――――――╮
-# │ USER               │
+# │ SETTINGS           │
 # ╰――――――――――――――――――――╯
-ARG USER=drone
-# VOLUME /opt/$USER
-# Volume does not work in podman
-RUN /bin/mkdir -p /opt/$USER \
- && /usr/sbin/addgroup $USER \
- && /usr/sbin/adduser -D -s /bin/ash -G $USER $USER \
- && /usr/sbin/usermod -aG wheel $USER \
- && /bin/echo "$USER:$USER" | chpasswd \
- && /usr/sbin/usermod --add-subuids 100000-165535 $USER \
- && /usr/sbin/usermod --add-subgids 100000-165535 $USER \
- && /bin/touch /var/log/drone-server.log \
- && /bin/touch /var/log/drone-runner-exec.log \
- && /bin/touch /var/log/drone-runner-docker.log \
- && /bin/touch /var/log/drone-runner-kube.log \
- && /bin/chown $USER:$USER -R /opt/$USER /var/log/drone-*.log
- # && /bin/touch /opt/$USER/$USER.sqlite \
- 
 USER $USER
 # Not home so the core.sqlite database is accessable via volume
-WORKDIR /opt/drone
+WORKDIR /opt/$USER
+VOLUME /opt/$USER
 
 # 
 # !!!!!!!! LEGACY PODMAN CONTAINER - Pulled from project.  Should build from scratch
