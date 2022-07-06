@@ -123,7 +123,7 @@ COPY 10-ep-container.sh /etc/container/entrypoint.d/10-ep-container.sh
 # ╰――――――――――――――――――――╯
 ARG PODMAN_VERSION
 ARG PODMAN_PACKAGE="$PODMAN_VERSION"-r1
-RUN /sbin/apk add --no-cache buildah podman=$PODMAN_PACKAGE fuse-overlayfs slirp4netns
+RUN /sbin/apk add --no-cache buildah podman=$PODMAN_PACKAGE fuse-overlayfs git slirp4netns
 COPY --from=src-drone /usr/lib/go/src/github.com/drone/cmd/drone-server/release/linux/arm64/drone-server /usr/bin/drone-server
 COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-exec/release/linux/arm64/drone-runner-exec /usr/bin/drone-runner-exec
 COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-docker/release/linux/arm64/drone-runner-docker /usr/bin/drone-runner-docker
