@@ -2,11 +2,8 @@
 
 # container-backup.fnc
 #
-# Calls the gitea backup function and unpacks the data
-# in the /var/backup folder and delete the zip file.
+# Backup function executed as root in the /tmp/backup working folder
 
 container_backup() {
- /bin/su -c "/usr/bin/gitea --config /etc/gitea/app.ini --work-path /opt/gitea --custom-path /opt/gitea/custom dump" gitea
- /usr/bin/unzip gitea-dump-*.zip
- /bin/rm gitea-dump-*.zip
+ /usr/bin/sqlite3 /opt/drone/core.sqlite ".backup 'drone_core_backup.sq3'"
 }
