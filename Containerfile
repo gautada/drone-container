@@ -109,6 +109,11 @@ EXPOSE 8080
 EXPOSE 3000
 
 # ╭――――――――――――――――――――╮
+# │ CONFIG             │
+# ╰――――――――――――――――――――╯
+RUN ln -s /etc/container/configmap.d /etc/drone
+
+# ╭――――――――――――――――――――╮
 # │ ENTRYPOINT         │
 # ╰――――――――――――――――――――╯
 COPY 10-ep-container.sh /etc/container/entrypoint.d/10-ep-container.sh
@@ -116,7 +121,7 @@ COPY 10-ep-container.sh /etc/container/entrypoint.d/10-ep-container.sh
 # ╭――――――――――――――――――――╮
 # │ BACKUP             │
 # ╰――――――――――――――――――――╯
-COPY backup.fnc /etc/container/backup.fnc
+COPY backup.fnc /etc/container/backup.d/backup.fnc
 
 # ╭――――――――――――――――――――╮
 # │ APPLICATION        │
