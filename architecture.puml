@@ -1,13 +1,18 @@
-@startuml
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+@startuml CONTEXT_CICD_DRONE
+!include <C4/C4.puml>
+!include <C4/C4_Context.puml>
+!include <C4/C4_Container.puml>
+!include <C4/C4_Component.puml>
+!include <C4/C4_Dynamic.puml>
+!include <C4/C4_Deployment.puml>
 
-System_Ext(github, "Github", "Source Code Manager", "Git Service")
-System_Ext(docker, "Docker", "Container Repository", "Container Repository")
+System_Ext(github, "Github", "Source Code Manager - Git Service")
+System_Ext(docker, "Docker", "Container Repository - Container Repository")
 
-System(podman, "Podman", "Container System", "OCI Container API")
-System(drone, "Drone", "Continuous Build", "Continuous Build System")
-System(gitea, "Gitea", "Source Code Manager", "Local/Private Source Code and Configuration Information")
-System(microk8s, "Microk8s", "Kubernetes Container Platform", "Local kubernetes platform")
+System(podman, "Podman", "Container System - OCI Container API")
+System(drone, "Drone", "Continuous Build - Continuous Build System")
+System(gitea, "Gitea", "Source Code Manager - Local/Private Source Code and Configuration Information")
+System(microk8s, "Microk8s", "Kubernetes Container Platform - Local kubernetes platform")
 
 Lay_D(github, gitea)
 
