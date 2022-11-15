@@ -1,0 +1,32 @@
+version: "3.9"
+services:
+  aws:
+    build:
+      args:
+        ALPINE_VERSION: "3.16.2"
+      context: .
+      dockerfile: Containerfile
+      no_cache: true
+      tags:
+        - "aws:dev"
+    image: "aws:dev"
+    ports:
+      - "8080:8080"
+    volumes:
+      - "development:/opt/development"
+      - "backup:/opt/backup"
+        
+volumes:
+  development:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /Users/mada/Workspace/aws/development-volume
+  backup:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /Users/mada/Workspace/aws/backup-volume
+      

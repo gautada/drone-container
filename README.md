@@ -1,6 +1,63 @@
-# drone -- trigger12
+# Drone
 
-[Drone](https://www.drone.io) container is a self-service Continuous Integration platform for busy development teams. This container contains three drone compoments:
+## Abstrct
+
+[Drone](https://www.drone.io) is a modern continuous integration platform that empowers automated build, test and release workflows using a powerful, cloud native pipeline engine.
+
+This container generally connects to [GitHub](https://github.com) to pull other container's code-base down and builds the container image via [Podman](https://podman.io) and then pushes the image to [Docker Hub](https//hub.docker.com) to be used in a Kubernetes cluster.
+
+## Features
+
+### Stateless
+
+The **Drone** container is ment to be stateless and therefore these should not be a need for backup.
+
+## Development
+
+This container is considered a bootstrap component and needs to be buildable all on it's own
+
+### Build Script
+
+```
+```
+
+### Run Script
+
+```
+```
+
+### Deploy Script
+
+```
+```
+
+## Test
+
+## Deploy
+
+## Architecture
+
+## Context
+
+## Container
+
+## Component
+
+## Administration
+
+### Checklist
+
+- [ ] README conforms to the [gist](https://gist.github.com/gautada/ec549c846e8e50daf355d01b06eb0665)
+- [ ] .gitignore conforms to the [gist](https://gist.github.com/gautada/3a0a4a76d3c7e4539e71fc02c7f599ad)
+- [ ] Volume folders are present (development-volume & backup-volume)
+- [ ] docker-compose(.yml) works
+- [ ] Manifst folder present (and origin to private repository is correct
+- [ ] Issue List is linked to proper URI
+- [ ] Signoff ({date and signature of last check})
+
+### Issues
+
+The official to list is kept in a [GitHub Issue List](https://github.com/gautada/drone-container/issues)
 
 - [Drone](https://github.com/harness/drone) is a continuous delivery system built on container technology. Drone uses a simple YAML build file, to define and execute build pipelines inside Docker containers.
 - [Command line client](https://github.com/harness/drone-cli) for the Drone continuous integration server.
