@@ -33,3 +33,8 @@ steps:
 trigger:
   branch:
   - main
+---
+kind: signature
+hmac: 3836a2ad2dc912e244076d1a3b735ce9c8fce9a78d4491efee5d9e1b08012e9a
+
+...
