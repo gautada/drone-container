@@ -1,6 +1,6 @@
 # drone
 
-[Drone](https://www.drone.io) is a self-service Continuous Integration platform for busy development teams. This container contains three drone compoments:
+[Drone](https://www.drone.io) container is a self-service Continuous Integration platform for busy development teams. This container contains three drone compoments:
 
 - [Drone](https://github.com/harness/drone) is a continuous delivery system built on container technology. Drone uses a simple YAML build file, to define and execute build pipelines inside Docker containers.
 - [Command line client](https://github.com/harness/drone-cli) for the Drone continuous integration server.
