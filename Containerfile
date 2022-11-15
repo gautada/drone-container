@@ -127,8 +127,8 @@ COPY backup.fnc /etc/container/backup.d/backup.fnc
 # │ APPLICATION        │
 # ╰――――――――――――――――――――╯
 ARG PODMAN_VERSION
-ARG PODMAN_PACKAGE="$PODMAN_VERSION"-r1
-RUN /sbin/apk add --no-cache buildah podman=$PODMAN_PACKAGE fuse-overlayfs git slirp4netns
+ARG PODMAN_PACKAGE="$PODMAN_VERSION"
+RUN /sbin/apk add --no-cache buildah podman fuse-overlayfs git slirp4netns
 RUN /sbin/apk add --no-cache sqlite
 COPY --from=src-drone /usr/lib/go/src/github.com/drone/cmd/drone-server/release/linux/arm64/drone-server /usr/bin/drone-server
 COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-exec/release/linux/arm64/drone-runner-exec /usr/bin/drone-runner-exec

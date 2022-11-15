@@ -29,4 +29,7 @@ steps:
    - podman tag drone:build docker.io/gautada/drone:$DRONE_SERVER_VERSION
    - podman login --username=$DOCKERIO_USERNAME --password=$DOCKERIO_PASSWORD docker.io
    - podman push docker.io/gautada/drone:$DRONE_SERVER_VERSION
-  
+
+trigger:
+  branch:
+  - main
