@@ -12,15 +12,19 @@ FROM gautada/alpine:$ALPINE_VERSION as src-drone
 # │ VERSION(S)         │
 # ╰――――――――――――――――――――╯
 ARG DRONE_SERVER_VERSION=2.11.1
-ARG DRONE_CLI_VERSION=1.5.0
-ARG DRONE_RUNNER_DOCKER_VERSION=1.8.1
-ARG DRONE_RUNNER_EXEC_VERSION=1.0.0-beta.9
-ARG DRONE_RUNNER_KUBE_VERSION=1.0.0-rc.3
 ARG DRONE_SERVER_BRANCH=v"$DRONE_SERVER_VERSION"
-ARG DRONE_CLI_BRANCH=v"$DRONE_CLI_VERSION"
-ARG DRONE_RUNNER_DOCKER_BRANCH=v"$DRONE_RUNNER_DOCKER_VERSION"
+
+ARG DRONE_RUNNER_EXEC_VERSION=1.0.0-beta.10
 ARG DRONE_RUNNER_EXEC_BRANCH=v"$DRONE_RUNNER_EXEC_VERSION"
-ARG DRONE_RUNNER_KUBE_BRANCH=v"$DRONE_RUNNER_KUBE_VERSION"
+
+ARG DRONE_CLI_VERSION=1.5.0
+ARG DRONE_CLI_BRANCH=v"$DRONE_CLI_VERSION"
+
+# ARG DRONE_RUNNER_DOCKER_VERSION=1.8.1
+# ARG DRONE_RUNNER_DOCKER_BRANCH=v"$DRONE_RUNNER_DOCKER_VERSION"
+
+# ARG DRONE_RUNNER_KUBE_VERSION=1.0.0-rc.3
+# ARG DRONE_RUNNER_KUBE_BRANCH=v"$DRONE_RUNNER_KUBE_VERSION"
 
 # ╭――――――――――――――――――――╮
 # │ CHANGE UPS USER    │
@@ -41,9 +45,9 @@ RUN mkdir -p /usr/lib/go/src/github.com
 WORKDIR /usr/lib/go/src/github.com
 RUN git clone --branch $DRONE_SERVER_BRANCH --depth 1 https://github.com/drone/drone.git
 RUN git clone --branch $DRONE_CLI_BRANCH --depth 1 https://github.com/drone/drone-cli.git
-RUN git clone --branch $DRONE_RUNNER_DOCKER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-docker.git
+# RUN git clone --branch $DRONE_RUNNER_DOCKER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-docker.git
 RUN git clone --branch $DRONE_RUNNER_EXEC_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-exec.git
-RUN git clone --branch $DRONE_RUNNER_KUBE_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-kube.git
+# RUN git clone --branch $DRONE_RUNNER_KUBE_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-kube.git
 
 # ╭――――――――――――――――――――╮
 # │ BUILD              │
@@ -54,12 +58,12 @@ WORKDIR /usr/lib/go/src/github.com/drone-cli
 # RUN go build -o release/linux/arm64/drone-cli
 # Not sure why CLI is different thant the others
 RUN go install ./...
-WORKDIR /usr/lib/go/src/github.com/drone-runner-docker
-RUN go build -o release/linux/arm64/drone-runner-docker
+# WORKDIR /usr/lib/go/src/github.com/drone-runner-docker
+# RUN go build -o release/linux/arm64/drone-runner-docker
 WORKDIR /usr/lib/go/src/github.com/drone-runner-exec
 RUN go build -o release/linux/arm64/drone-runner-exec
-WORKDIR /usr/lib/go/src/github.com/drone-runner-kube
-RUN go build -o release/linux/arm64/drone-runner-kube
+# WORKDIR /usr/lib/go/src/github.com/drone-runner-kube
+# RUN go build -o release/linux/arm64/drone-runner-kube
 
 # ╭――――――――――――――――-------------------------------------------------------――╮
 # │                                                                         │
@@ -130,14 +134,18 @@ COPY backup /etc/container/backup
 RUN /sbin/apk add --no-cache buildah podman fuse-overlayfs git slirp4netns sqlite
 
 # ╭――――――――――――――――――――╮
-# │ CONFIGURE           │
+# │ CONFIGURE          │
 # ╰――――――――――――――――――――╯
 COPY --from=src-drone /usr/lib/go/src/github.com/drone/cmd/drone-server/release/linux/arm64/drone-server /usr/bin/drone-server
-COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-exec/release/linux/arm64/drone-runner-exec /usr/bin/drone-runner-exec
-COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-docker/release/linux/arm64/drone-runner-docker /usr/bin/drone-runner-docker
-COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-kube/release/linux/arm64/drone-runner-kube /usr/bin/drone-runner-kube
 
 COPY --from=src-drone /usr/lib/go/bin/drone /usr/bin/drone
+
+COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-exec/release/linux/arm64/drone-runner-exec /usr/bin/drone-runner-exec
+
+# COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-docker/release/linux/arm64/drone-runner-docker /usr/bin/drone-runner-docker
+# COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-kube/release/linux/arm64/drone-runner-kube /usr/bin/drone-runner-kube
+
+
 
 # RUN mkdir -p /etc/drone \
 #  && ln -fsv /mnt/volumes/container/server.env /etc/drone/server.env \
