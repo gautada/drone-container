@@ -116,35 +116,38 @@ RUN ln -s /etc/container/configmap.d /etc/drone
 # ╭――――――――――――――――――――╮
 # │ ENTRYPOINT         │
 # ╰――――――――――――――――――――╯
-COPY 10-ep-container.sh /etc/container/entrypoint.d/10-ep-container.sh
+RUN rm -v /etc/container/entrypoint
+COPY entrypoint /etc/container/entrypoint
 
 # ╭――――――――――――――――――――╮
 # │ BACKUP             │
 # ╰――――――――――――――――――――╯
-COPY backup.fnc /etc/container/backup.d/backup.fnc
+COPY backup /etc/container/backup
 
 # ╭――――――――――――――――――――╮
-# │ APPLICATION        │
+# │ PACKAGES           │
 # ╰――――――――――――――――――――╯
-ARG PODMAN_VERSION
-ARG PODMAN_PACKAGE="$PODMAN_VERSION"
-RUN /sbin/apk add --no-cache buildah podman fuse-overlayfs git slirp4netns
-RUN /sbin/apk add --no-cache sqlite
+RUN /sbin/apk add --no-cache buildah podman fuse-overlayfs git slirp4netns sqlite
+
+# ╭――――――――――――――――――――╮
+# │ CONFIGURE           │
+# ╰――――――――――――――――――――╯
 COPY --from=src-drone /usr/lib/go/src/github.com/drone/cmd/drone-server/release/linux/arm64/drone-server /usr/bin/drone-server
 COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-exec/release/linux/arm64/drone-runner-exec /usr/bin/drone-runner-exec
 COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-docker/release/linux/arm64/drone-runner-docker /usr/bin/drone-runner-docker
 COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-kube/release/linux/arm64/drone-runner-kube /usr/bin/drone-runner-kube
-COPY --from=src-drone /usr/lib/go/bin/drone /usr/bin/drone
-COPY 10-ep-container.sh /etc/entrypoint.d/10-ep-container.sh
-RUN mkdir -p /etc/drone \
- && ln -s /opt/drone/server.env /etc/drone/server.env \
- && ln -s /opt/drone/runner-docker.env /etc/drone/runner-docker.env \
- && ln -s /opt/drone/runner-exec.env /etc/drone/runner-exec.env \
- && ln -s /opt/drone/runner-kube.env /etc/drone/runner-kube.env \
- && ln -s /tmp/podman-run-1002/podman/podman.sock /var/run/docker.sock
 
-RUN /usr/sbin/usermod --add-subuids 100000-165535 $USER \
- && /usr/sbin/usermod --add-subgids 100000-165535 $USER
+COPY --from=src-drone /usr/lib/go/bin/drone /usr/bin/drone
+
+# RUN mkdir -p /etc/drone \
+#  && ln -fsv /mnt/volumes/container/server.env /etc/drone/server.env \
+#  && ln -fsv /mnt/volumes/container/runner-docker.env /etc/drone/runner-docker.env \
+#  && ln -fsv /mnt/volumes/container/runner-exec.env /etc/drone/runner-exec.env \
+#  && ln -fsv /mnt/volumes/container/runner-kube.env /etc/drone/runner-kube.env \
+#  && ln -fsv /tmp/podman-run-1002/podman/podman.sock /var/run/docker.sock
+
+# RUN /usr/sbin/usermod --add-subuids 100000-165535 $USER \
+#  && /usr/sbin/usermod --add-subgids 100000-165535 $USER
 
 # ╭――――――――――――――――――――╮
 # │ SETTINGS           │
@@ -152,56 +155,5 @@ RUN /usr/sbin/usermod --add-subuids 100000-165535 $USER \
 USER $USER
 # Not home so the core.sqlite database is accessable via volume
 WORKDIR /opt/$USER
-VOLUME /opt/$USER
 
-# 
-# !!!!!!!! LEGACY PODMAN CONTAINER - Pulled from project.  Should build from scratch
-# 
-# LABEL source="https://github.com/gautada/podman-container.git"
-# LABEL maintainer="Adam Gautier <adam@gautier.org>"
-# LABEL description="This container is a podman installation for building OCI containers."
-# 
-# USER root
-# WORKDIR /
-# VOLUME /opt/podman
-# 
-# ARG PODMAN_VERSION
-# ARG PODMAN_PACKAGE="$PODMAN_VERSION"-r1
-# RUN /sbin/apk add --no-cache buildah podman=$PODMAN_PACKAGE fuse-overlayfs slirp4netns
-# 
-# COPY podman-bootstrap /usr/bin/podman-bootstrap
-# COPY podman-prune /etc/periodic/15min/podman-prune
-# COPY 10-profile.sh  /etc/profile.d/10-profile.sh
-# COPY 10-entrypoint.sh  /etc/entrypoint.d/10-entrypoint.sh
-# 
-# RUN /bin/cp /etc/ssh/sshd_config /etc/ssh/sshd_config~ \
-#  && /bin/echo "" >> /etc/ssh/sshd_config \
-#  && /bin/echo "" >> /etc/ssh/sshd_config \
-#  && /bin/echo "# ***** PODMAN CONTAINER - PODMAN SERVICE *****" >> /etc/ssh/sshd_config \
-#  && /bin/echo "" >> /etc/ssh/sshd_config \
-#  && /bin/echo "" >> /etc/ssh/sshd_config \
-#  && /bin/sed -i -e "/AllowTcpForwarding/s/^#*/# /" /etc/ssh/sshd_config \
-#  && /bin/echo "AllowTcpForwarding yes" >> /etc/ssh/sshd_config
-#  
-# RUN /bin/cp /etc/containers/storage.conf /etc/containers/storage.conf~ \
-#  && /bin/sed -i -e 's/#mount_program/mount_program/' /etc/containers/storage.conf 
-#  
-#  
-# ARG USER=podman
-# RUN /bin/mkdir -p /opt/$USER \
-#  && /usr/sbin/addgroup $USER \
-#  && /usr/sbin/adduser -D -s /bin/ash -G $USER $USER \
-#  && /usr/sbin/usermod -aG wheel $USER \
-#  && /usr/sbin/usermod --add-subuids 100000-165535 $USER \
-#  && /usr/sbin/usermod --add-subgids 100000-165535 $USER \
-#  && /bin/echo "$USER:$USER" | chpasswd \
-#  && /bin/touch /var/log/podman.log \
-#  && /bin/chown $USER:$USER -R /opt/$USER /var/log/podman.log
-#  
-# USER $USER
-# WORKDIR /home/$USER
-#  
-# RUN podman system connection add local --identity /home/$USER/.ssh/podman_key ssh://localhost:22/tmp/podman-run-1000/podman/podman.sock \
-# && podman system connection add x86 --identity /home/$USER/.ssh/podman_key_x86 ssh://$USER@podman-x86.cicd.svc.cluster.local:22/tmp/podman-run-1000/podman/podman.sock \
-# && podman system connection add arm --identity /home/$USER/.ssh/podman_key_arm ssh://$USER@podman-arm.cicd.svc.cluster.local:22/tmp/podman-run-1000/podman/podman.sock
 

@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/sh
 #
 # Launch the DroneCI application.  This launches bother
 
