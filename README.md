@@ -10,6 +10,9 @@ This container generally connects to [GitHub](https://github.com) to pull other 
 
 ## Features
 
+**Note:** All of the features are distributed seperately and therfore needs to have their versions updated in the `docker-compose.yml` or `drone.yml` files.
+
+- podman - OCI/Open Source replacement for docker
 - CLI - command line interface
 - **Runners**:
  - Docker - runner in a container (dind)
@@ -17,6 +20,10 @@ This container generally connects to [GitHub](https://github.com) to pull other 
  - Kube - runner within a pod in the k8s cluster
 
 ## Details
+
+### podman
+
+[podman](https://podman.io) is a daemonless container engine for developing, managing, and running OCI Containers on your Linux System. Containers can either be run as root or in rootless mode. 
 
 ### CLI
 
@@ -75,6 +82,44 @@ The official to list is kept in a [GitHub Issue List](https://github.com/gautada
 ## Notes
 
 - The podman environment needs to use the `--format` to build like docker.  This needed if the `VOLUME` command is used in the container file. To remove the subsequent warning user `--format docker`.
+- Access tokens are used for docker.io image repository and stored in the `orgsecrets` function. Tokens are stored in password management. Token management is in `https://hub.docker.com/settings/security`.
+- Just to record somewhere the mechanism to build a multi-architecture container image distribution.
+
+**Build and push architecture 1**
+```
+podman build --file Containerfile --no-cache --tag img:dev .
+podman tag img:dev docker.io/$DOCKER_USERNAME/img:{VERSION}-{ARCH1}
+podman login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
+podman push docker.io/$DOCKER_USERNAME/img:{VERSION}-{ARCH1}
+```
+
+**Build and push architecture 2**
+```
+podman --remote --connection x86 build --file Containerfile --no-cache --tag img:dev .
+podman --remote --connection x86 tag drone:dev docker.io/$DOCKER_USERNAME/img:{VERSION}-{ARCH2}
+podman --remote --connection x86 login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
+podman --remote --connection x86 push docker.io/$DOCKER_USERNAME/img:{VERSION}-{ARCH2}
+```
+
+**Build and push manifest**
+```
+podman manifest create img:man
+podman manifest add img:man docker.io/$DOCKER_USERNAME/img:{VERSION}-{ARCH1}
+podman manifest add img:man docker.io/$DOCKER_USERNAME/img:{VERSION}-{ARCH2}
+podman tag img:man docker.io/$DOCKER_USERNAME/img:{VERSION}
+podman push docker.io/$DOCKER_USERNAME/img:{VERSION}
+```
+
+**Clean-up**
+```
+podman docker.io/$DOCKER_USERNAME/img:{VERSION}-{ARCH1}
+podman rmi drone:dev
+
+podman --remote --connection x86 rmi docker.io/$DOCKER_USERNAME/img:{VERSION}-{ARCH2}
+podman --remote --connection x86 rmi drone:dev
+
+podman rmi drone:man
+```
 
 
 

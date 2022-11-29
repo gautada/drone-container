@@ -146,10 +146,16 @@ COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-exec/release/linux
 # COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-kube/release/linux/arm64/drone-runner-kube /usr/bin/drone-runner-kube
 
 RUN /bin/mkdir -p /etc/container \
- && /bin/ln -fsv /mnt/volumes/container/server.env /etc/container/server.env \
- && /bin/ln -fsv /mnt/volumes/container/runner-docker.env /etc/container/runner-docker.env \
- && /bin/ln -fsv /mnt/volumes/container/runner-exec.env /etc/container/runner-exec.env \
- && /bin/ln -fsv /mnt/volumes/container/runner-kube.env /etc/container/runner-kube.env \
+ && /bin/ln -fsv /mnt/volumes/configmaps/server.env /etc/container/server.env \
+ && /bin/ln -fsv /mnt/volumes/configmaps/runner-docker.env /etc/container/runner-docker.env \
+ && /bin/ln -fsv /mnt/volumes/configmaps/runner-exec.env /etc/container/runner-exec.env \
+ && /bin/ln -fsv /mnt/volumes/configmaps/runner-kube.env /etc/container/runner-kube.env \
+ && /bin/ln -fsv /mnt/volumes/configmaps/cli.env /etc/container/cli.env \
+ && /bin/ln -fsv /mnt/volumes/container/server.env /mnt/volumes/configmaps/server.env \
+ && /bin/ln -fsv /mnt/volumes/container/runner-docker.env /mnt/volumes/configmaps/runner-docker.env \
+ && /bin/ln -fsv /mnt/volumes/container/runner-exec.env /mnt/volumes/configmaps/runner-exec.env \
+ && /bin/ln -fsv /mnt/volumes/container/runner-kube.env /mnt/volumes/configmaps/runner-kube.env \
+ && /bin/ln -fsv /mnt/volumes/container/cli.env /mnt/volumes/configmaps/cli.env \
  && /bin/ln -fsv /tmp/podman-run-1002/podman/podman.sock /var/run/docker.sock
 
 RUN /usr/sbin/usermod --add-subuids 100000-165535 $USER \
