@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# Launch the DroneCI application.  This launches podman and exec runner
+
+ENTRYPOINT_PARAMS="$@"
+. /etc/profile
+
+if [ -z "$@" ] ; then
+log "-i" "entrypoint" "Start drone(VERSION)"
+ TEST="$(/usr/bin/pgrep /usr/bin/podman)"
+ if [ $? -eq 1 ] ; then
+  log "-i" "entrypoint" "podman(VERSION)"
+  /usr/bin/podman --log-level fatal system service --time 0 &
+ fi
+ TEST="$(/usr/bin/pgrep drone-runner-exec)"
+ if [ $? -eq 1 ] ; then
+  log "-i" "entrypoint" "runner(exec-VERSION)"
+  /usr/bin/drone-runner-exec daemon "/etc/container/runner-exec.env" &
+ fi
+ TEST="$(/usr/bin/pgrep drone-server)"
+ if [ $? -eq 1 ] ; then
+  log "-i" "entrypoint" "server(VERSION)"
+  /usr/bin/drone-server --env-file /etc/container/server.env
+ fi
+ return 1
+fi

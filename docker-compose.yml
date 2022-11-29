@@ -1,32 +1,39 @@
 version: "3.9"
 services:
-  aws:
+  drone:
     build:
       args:
-        ALPINE_VERSION: "3.16.2"
+        ALPINE_VERSION: "latest"
+        PODMAN_VERSION: "4.3.0"
+        DRONE_SERVER_VERSION: 2.15.0
+        DRONE_CLI_VERSION: 1.6.2
+        DRONE_RUNNER_DOCKER_VERSION: 1.8.1
+        DRONE_RUNNER_EXEC_VERSION: 1.0.0-beta.10
+        DRONE_RUNNER_KUBE_VERSION: 1.0.0-rc.3
       context: .
       dockerfile: Containerfile
       no_cache: true
       tags:
-        - "aws:dev"
-    image: "aws:dev"
+        - "drone:dev"
+    image: "drone:dev"
+    privileged: true
     ports:
       - "8080:8080"
     volumes:
-      - "development:/opt/development"
-      - "backup:/opt/backup"
+      - "container:/mnt/volumes/container"
+      - "backup:/mnt/volumes/backup"
         
 volumes:
-  development:
+  container:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /Users/mada/Workspace/aws/development-volume
+      device: /Users/mada/Workspace/drone/container-volume
   backup:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /Users/mada/Workspace/aws/backup-volume
+      device: /Users/mada/Workspace/drone/backup-volume
       
