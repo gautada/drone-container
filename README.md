@@ -1,64 +1,56 @@
 # Drone
 
-## Abstrct
+## Abstract
 
-[Drone](https://www.drone.io) is a modern continuous integration platform that empowers automated build, test and release workflows using a powerful, cloud native pipeline engine.
+[Drone](https://drone.io) is a modern continuous integration platform that empowers automated build, test and release workflows using a powerful, cloud native pipeline engine.
+
+**Drone** has joined [Harness](https://harness.io). The product page has moved to [Continuous Integration](https://harness.io/products/continuous-integration) and the project moved repomoved to [harness/drone](https://github.com/harness/drone/).
 
 This container generally connects to [GitHub](https://github.com) to pull other container's code-base down and builds the container image via [Podman](https://podman.io) and then pushes the image to [Docker Hub](https//hub.docker.com) to be used in a Kubernetes cluster.
 
 ## Features
 
-- [Drone](https://github.com/harness/drone) is a continuous delivery system built on container technology. Drone uses a simple YAML build file, to define and execute build pipelines inside Docker containers.
-- [Command line client](https://github.com/harness/drone-cli) for the Drone continuous integration server.
-- [Runners](https://github.com/drone-runners) This container contains multiple runners.
- - Docker - Lauches a docker container
- - Exec - Runs locally on the drone host
- - Kube - Runs a pod in the k8s cluster
+- CLI - command line interface
+- **Runners**:
+ - Docker - runner in a container (dind)
+ - Exec - runner within the server container
+ - Kube - runner within a pod in the k8s cluster
 
-## Development
+## Details
 
-This container is considered a bootstrap component and needs to be buildable all on it's own without dependencies. 
+### CLI
 
-### Build Script
+[Command line client](https://github.com/harness/drone-cli) for the Drone continuous integration server.
 
-Parameters:
-- ALPINE_VERSION
-- PODMAN_VERSION
-- DRONE_SERVER_VERSION
-- DRONE_RUNNER_DOCKER_VERSION
-- DRONE_RUNNER_EXEC_VERSION
-- DRONE_RUNNER_KUBE_VERSION
+### Docker
 
-```
-docker compose build drone --no-cache
-```
+The [docker runner](https://github.com/drone-runners/drone-runner-docker) executes pipelines inside Docker containers. This runner is intended for linux workloads that are suitable for execution inside containers. This requires Drone server 1.6.0 or higher. Need to figureout the relationship to  [harness/harness-docker-runner](https://github.com/harness/harness-docker-runner).
 
-### Run Script
+### Exec
 
-The `{command} parameter is option and is only needed if you want to overide the default.
+The [exec runner](https://github.com/drone-runners/drone-runner-exec) executes pipelines directly on the host machine. This runner is intended for workloads that are not suitable for running inside containers. This requires Drone server 1.2.3 or higher.
 
-```
-docker compose run --service-ports drone {command}
-```
+### Kube
 
-### Deploy Script
+The [kubernetes runner](https://github.com/drone-runners/drone-runner-kube) executes pipelines inside Kubernetes pods. This runner is an alternative to the docker runner and is optimize for teams running Drone on Kubernetes. This requires Drone server 1.6.0 or higher.
+
+
+## Deploy
 
 Being a bootstrap container you may need to push the image to the repository.
 
 Parameters:
-- {DRONE_SERVER_VERSION}: Version from the above build script
+- {DRONE_SERVER_VERSION}: Version from the build script
 - {DOCKER_USERNAME}: Docker Hub User Name
-- {Docker_PASSWORD}: Docker Hub Password
+- {DOCKER_PASSWORD}: Docker Hub Password
 
 On the desktop credentials are usually handled by the desktop app, check `~/.docker/config.json` to confirm.  This should eliminate the need for `docker login --username={DOCKER_USERNAME} --password={DOCKER_PASSWORD} docker.io`
+
+**Integration Script**
 ```
 docker tag drone:dev docker.io/gautada/drone:{DRONE_SERVER_VERSION}
 docker push docker.io/gautada/drone:{DRONE_SERVER_VERSION}
 ```
-
-## Test
-
-## Deploy
 
 ## Architecture
 
@@ -74,13 +66,7 @@ docker push docker.io/gautada/drone:{DRONE_SERVER_VERSION}
 
 ### Checklist
 
-- [ ] README conforms to the [gist](https://gist.github.com/gautada/ec549c846e8e50daf355d01b06eb0665)
-- [ ] .gitignore conforms to the [gist](https://gist.github.com/gautada/3a0a4a76d3c7e4539e71fc02c7f599ad)
-- [ ] Volume folders are present (development-volume & backup-volume)
-- [ ] docker-compose(.yml) works
-- [ ] Manifst folder present (and origin to private repository is correct
-- [ ] Issue List is linked to proper URI
-- [ ] Signoff ({date and signature of last check})
+- [2022-11-28 Checklist](https://github.com/gautada/drone-container/issues/34)
 
 ### Issues
 
@@ -89,6 +75,7 @@ The official to list is kept in a [GitHub Issue List](https://github.com/gautada
 ## Notes
 
 - The podman environment needs to use the `--format` to build like docker.  This needed if the `VOLUME` command is used in the container file. To remove the subsequent warning user `--format docker`.
+
 
 
 

@@ -1,4 +1,4 @@
-ARG ALPINE_VERSION=3.16.0
+ARG ALPINE_VERSION=latest
 
 # ╭―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――╮
 # │                                                                           │
@@ -11,13 +11,13 @@ FROM gautada/alpine:$ALPINE_VERSION as src-drone
 # ╭――――――――――――――――――――╮
 # │ VERSION(S)         │
 # ╰――――――――――――――――――――╯
-ARG DRONE_SERVER_VERSION=2.11.1
+ARG DRONE_SERVER_VERSION=2.15.0
 ARG DRONE_SERVER_BRANCH=v"$DRONE_SERVER_VERSION"
 
 ARG DRONE_RUNNER_EXEC_VERSION=1.0.0-beta.10
 ARG DRONE_RUNNER_EXEC_BRANCH=v"$DRONE_RUNNER_EXEC_VERSION"
 
-ARG DRONE_CLI_VERSION=1.5.0
+ARG DRONE_CLI_VERSION=1.6.2
 ARG DRONE_CLI_BRANCH=v"$DRONE_CLI_VERSION"
 
 # ARG DRONE_RUNNER_DOCKER_VERSION=1.8.1
@@ -43,8 +43,8 @@ RUN git config --global advice.detachedHead false
 # ╰――――――――――――――――――――╯
 RUN mkdir -p /usr/lib/go/src/github.com
 WORKDIR /usr/lib/go/src/github.com
-RUN git clone --branch $DRONE_SERVER_BRANCH --depth 1 https://github.com/drone/drone.git
-RUN git clone --branch $DRONE_CLI_BRANCH --depth 1 https://github.com/drone/drone-cli.git
+RUN git clone --branch $DRONE_SERVER_BRANCH --depth 1 https://github.com/harness/drone.git
+RUN git clone --branch $DRONE_CLI_BRANCH --depth 1 https://github.com/harness/drone-cli.git
 # RUN git clone --branch $DRONE_RUNNER_DOCKER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-docker.git
 RUN git clone --branch $DRONE_RUNNER_EXEC_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-exec.git
 # RUN git clone --branch $DRONE_RUNNER_KUBE_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-kube.git
@@ -145,23 +145,22 @@ COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-exec/release/linux
 # COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-docker/release/linux/arm64/drone-runner-docker /usr/bin/drone-runner-docker
 # COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-kube/release/linux/arm64/drone-runner-kube /usr/bin/drone-runner-kube
 
+RUN /bin/mkdir -p /etc/container \
+ && /bin/ln -fsv /mnt/volumes/container/server.env /etc/container/server.env \
+ && /bin/ln -fsv /mnt/volumes/container/runner-docker.env /etc/container/runner-docker.env \
+ && /bin/ln -fsv /mnt/volumes/container/runner-exec.env /etc/container/runner-exec.env \
+ && /bin/ln -fsv /mnt/volumes/container/runner-kube.env /etc/container/runner-kube.env \
+ && /bin/ln -fsv /tmp/podman-run-1002/podman/podman.sock /var/run/docker.sock
 
-
-# RUN mkdir -p /etc/drone \
-#  && ln -fsv /mnt/volumes/container/server.env /etc/drone/server.env \
-#  && ln -fsv /mnt/volumes/container/runner-docker.env /etc/drone/runner-docker.env \
-#  && ln -fsv /mnt/volumes/container/runner-exec.env /etc/drone/runner-exec.env \
-#  && ln -fsv /mnt/volumes/container/runner-kube.env /etc/drone/runner-kube.env \
-#  && ln -fsv /tmp/podman-run-1002/podman/podman.sock /var/run/docker.sock
-
-# RUN /usr/sbin/usermod --add-subuids 100000-165535 $USER \
-#  && /usr/sbin/usermod --add-subgids 100000-165535 $USER
+RUN /usr/sbin/usermod --add-subuids 100000-165535 $USER \
+ && /usr/sbin/usermod --add-subgids 100000-165535 $USER
 
 # ╭――――――――――――――――――――╮
 # │ SETTINGS           │
 # ╰――――――――――――――――――――╯
 USER $USER
 # Not home so the core.sqlite database is accessable via volume
-WORKDIR /opt/$USER
+RUN /bin/ln -fsv /mnt/volumes/container/core.sqlite /home/$USER/core.sqlite
+WORKDIR /home/$USER
 
 
