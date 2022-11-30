@@ -12,12 +12,12 @@ This container generally connects to [GitHub](https://github.com) to pull other 
 
 **Note:** All of the features are distributed seperately and therfore needs to have their versions updated in the `docker-compose.yml` or `drone.yml` files.
 
-- podman - OCI/Open Source replacement for docker
-- CLI - command line interface
+- **podman:** OCI/Open Source replacement for docker
+- **CLI:** command line interface
 - **Runners**:
- - Docker - runner in a container (dind)
- - Exec - runner within the server container
- - Kube - runner within a pod in the k8s cluster
+ - **Docker:** runner in a container (dind)
+ - **Exec:** runner within the server container
+ - **Kube:** runner within a pod in the k8s cluster
 
 ## Details
 
@@ -29,15 +29,17 @@ This container generally connects to [GitHub](https://github.com) to pull other 
 
 [Command line client](https://github.com/harness/drone-cli) for the Drone continuous integration server.
 
-### Docker
+### Runners
+
+#### Docker
 
 The [docker runner](https://github.com/drone-runners/drone-runner-docker) executes pipelines inside Docker containers. This runner is intended for linux workloads that are suitable for execution inside containers. This requires Drone server 1.6.0 or higher. Need to figureout the relationship to  [harness/harness-docker-runner](https://github.com/harness/harness-docker-runner).
 
-### Exec
+#### Exec
 
 The [exec runner](https://github.com/drone-runners/drone-runner-exec) executes pipelines directly on the host machine. This runner is intended for workloads that are not suitable for running inside containers. This requires Drone server 1.2.3 or higher.
 
-### Kube
+#### Kube
 
 The [kubernetes runner](https://github.com/drone-runners/drone-runner-kube) executes pipelines inside Kubernetes pods. This runner is an alternative to the docker runner and is optimize for teams running Drone on Kubernetes. This requires Drone server 1.6.0 or higher.
 
@@ -124,8 +126,3 @@ podman --remote --connection x86 rmi drone:dev
 
 podman rmi drone:man
 ```
-
-
-
-
-
