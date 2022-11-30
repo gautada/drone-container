@@ -4,5 +4,5 @@
 #         this file should be coppied to /etc/container/backup` via the 'Containerfile`.
 
 container_backup() {
- /usr/bin/sqlite3 /opt/drone/core.sqlite ".backup 'drone_core_backup.sq3'"
+ /usr/bin/sqlite3 /mnt/volumes/container/core.sqlite ".backup 'drone_core_backup.sq3'"
 }
