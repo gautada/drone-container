@@ -5,4 +5,8 @@
 
 container_backup() {
  /usr/bin/sqlite3 /mnt/volumes/container/core.sqlite ".backup 'drone_core_backup.sq3'"
+ /bin/cp /etc/container/runner-kube.env ./
+ /bin/cp /etc/container/runner-exec.env ./
+ /bin/cp /etc/container/server.env ./
+ /bin/cp /etc/container/runner-docker.env ./
 }

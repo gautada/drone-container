@@ -50,9 +50,8 @@ else
  /usr/bin/pgrep drone-server > /dev/null
  TEST=$?
  if [ $TEST -eq 1 ] ; then
- /bin/mkdir -p /mnt/volumes/container/log
   log "-i" "entrypoint" "Forked server($(app_version))"
-  /usr/bin/drone-server --env-file /etc/container/server.env >> /mnt/volumes/container/log/override.log 2>&1 &
+  /usr/bin/drone-server --env-file /etc/container/server.env >> /mnt/volumes/container/_log 2>&1 &
  fi
  return 0
 fi
