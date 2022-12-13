@@ -67,16 +67,10 @@ RUN go build -o release/linux/arm64/drone-runner-exec
 
 # ╭――――――――――――――――-------------------------------------------------------――╮
 # │                                                                         │
-# │ STAGE 2: drone-container                                                │
+# │ STAGE: container                                                        │
 # │                                                                         │
 # ╰―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――╯
 FROM gautada/alpine:$ALPINE_VERSION
-
-# ╭――――――――――――――――――――╮
-# │ CHANGE UPS USER    │
-# ╰――――――――――――――――――――╯
-USER root
-WORKDIR /
 
 # ╭――――――――――――――――――――╮
 # │ METADATA           │
@@ -86,62 +80,47 @@ LABEL maintainer="Adam Gautier <adam@gautier.org>"
 LABEL description="This container is a a drone CI installation."
 
 # ╭――――――――――――――――――――╮
-# │ USER               │
+# │ STANDARD CONFIG    │
 # ╰――――――――――――――――――――╯
-ARG UID=1001
-ARG GID=1001
+
+# USER:
 ARG USER=drone
 
+ARG UID=1001
+ARG GID=1001
 RUN /usr/sbin/addgroup -g $GID $USER \
  && /usr/sbin/adduser -D -G $USER -s /bin/ash -u $UID $USER \
  && /usr/sbin/usermod -aG wheel $USER \
  && /bin/echo "$USER:$USER" | chpasswd
- 
-RUN /bin/touch /var/log/drone-server.log \
- && /bin/touch /var/log/drone-runner-exec.log \
- && /bin/touch /var/log/drone-runner-docker.log \
- && /bin/touch /var/log/drone-runner-kube.log
- 
-RUN /bin/mkdir -p /opt/$USER \
- && /bin/chown $USER:$USER -R /opt/$USER /var/log/drone-*.log
- 
- 
-# ╭――――――――――――――――――――╮
-# │ PORTS              │
-# ╰――――――――――――――――――――╯
-EXPOSE 8080
-EXPOSE 3000
 
-# ╭――――――――――――――――――――╮
-# │ CONFIG             │
-# ╰――――――――――――――――――――╯
-RUN ln -s /etc/container/configmap.d /etc/drone
+# PRIVILEGE:
+# COPY wheel  /etc/container/wheel
 
-# ╭――――――――――――――――――――╮
-# │ ENTRYPOINT         │
-# ╰――――――――――――――――――――╯
+# BACKUP:
+COPY backup /etc/container/backup
+
+# ENTRYPOINT:
 RUN rm -v /etc/container/entrypoint
 COPY entrypoint /etc/container/entrypoint
 
-# ╭――――――――――――――――――――╮
-# │ BACKUP             │
-# ╰――――――――――――――――――――╯
-COPY backup /etc/container/backup
+# FOLDERS
+RUN /bin/chown -R $USER:$USER /mnt/volumes/container \
+ && /bin/chown -R $USER:$USER /mnt/volumes/backup \
+ && /bin/chown -R $USER:$USER /var/backup \
+ && /bin/chown -R $USER:$USER /tmp/backup
+
 
 # ╭――――――――――――――――――――╮
-# │ PACKAGES           │
+# │ APPLICATION        │
 # ╰――――――――――――――――――――╯
 RUN /sbin/apk add --no-cache buildah podman fuse-overlayfs git slirp4netns sqlite
 
-# ╭――――――――――――――――――――╮
-# │ CONFIGURE          │
-# ╰――――――――――――――――――――╯
+RUN /usr/sbin/usermod --add-subuids 100000-165535 $USER \
+ && /usr/sbin/usermod --add-subgids 100000-165535 $USER
+ 
 COPY --from=src-drone /usr/lib/go/src/github.com/drone/cmd/drone-server/release/linux/arm64/drone-server /usr/bin/drone-server
-
 COPY --from=src-drone /usr/lib/go/bin/drone /usr/bin/drone
-
 COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-exec/release/linux/arm64/drone-runner-exec /usr/bin/drone-runner-exec
-
 # COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-docker/release/linux/arm64/drone-runner-docker /usr/bin/drone-runner-docker
 # COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-kube/release/linux/arm64/drone-runner-kube /usr/bin/drone-runner-kube
 
@@ -158,15 +137,26 @@ RUN /bin/mkdir -p /etc/container \
  && /bin/ln -fsv /mnt/volumes/container/cli.env /mnt/volumes/configmaps/cli.env \
  && /bin/ln -fsv /tmp/podman-run-1002/podman/podman.sock /var/run/docker.sock
 
-RUN /usr/sbin/usermod --add-subuids 100000-165535 $USER \
- && /usr/sbin/usermod --add-subgids 100000-165535 $USER
+RUN /bin/touch /var/log/drone-server.log \
+ && /bin/touch /var/log/drone-runner-exec.log \
+ && /bin/touch /var/log/drone-runner-docker.log \
+ && /bin/touch /var/log/drone-runner-kube.log
+ 
+RUN /bin/mkdir -p /opt/$USER \
+ && /bin/chown $USER:$USER -R /opt/$USER /var/log/drone-*.log
 
-# ╭――――――――――――――――――――╮
-# │ SETTINGS           │
-# ╰――――――――――――――――――――╯
-USER $USER
+# RUN ln -s /etc/container/configmap.d /etc/drone
+
 # Not home so the core.sqlite database is accessable via volume
 RUN /bin/ln -fsv /mnt/volumes/container/core.sqlite /home/$USER/core.sqlite
+
+# ╭――――――――――――――――――――╮
+# │ CONTAINER          │
+# ╰――――――――――――――――――――╯
+USER $USER
+VOLUME /mnt/volumes/backup
+VOLUME /mnt/volumes/configmaps
+VOLUME /mnt/volumes/container
+EXPOSE 8080/tcp
+EXPOSE 3000/tcp
 WORKDIR /home/$USER
-
-
