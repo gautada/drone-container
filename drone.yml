@@ -11,7 +11,7 @@ steps:
   environment:
     ALPINE_VERSION: "latest"
     PODMAN_VERSION: 4.3.0
-    DRONE_SERVER_VERSION: 2.15.0
+    DRONE_SERVER_VERSION: 2.16.0
     DRONE_CLI_VERSION: 1.6.2
     DRONE_RUNNER_DOCKER_VERSION: 1.8.1
     DRONE_RUNNER_EXEC_VERSION: 1.0.0-beta.9
@@ -23,7 +23,7 @@ steps:
 - name: publish
   environment:
     CONTAINER_NAME: "drone"
-    CONTAINER_VERSION: 2.15.0
+    CONTAINER_VERSION: 2.16.0
     DOCKERIO_USERNAME:
       from_secret: username.docker.io
     DOCKERIO_PASSWORD:
