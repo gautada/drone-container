@@ -25,7 +25,7 @@ steps:
     CONTAINER_NAME: "drone"
     CONTAINER_VERSION: 2.16.0
     DOCKERIO_USERNAME:
-      from_secret:  
+      from_secret: username.docker.io
     DOCKERIO_PASSWORD:
       from_secret: password.docker.io
   commands:
