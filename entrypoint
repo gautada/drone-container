@@ -6,6 +6,11 @@
 #             The default template is kept in
 #             [gist](https://gist.github.com/gautada/f185700af585a50b3884ad10c2b02f98)
 
+WETTY_USER="$(/usr/bin/whoami)"
+WETTY_TITLE="DRONE"
+WETTY_COMMAND="/bin/ash"
+WETTY_PORT="8888"
+
 ENTRYPOINT_PARAMS="$@"
 . /etc/profile
 
@@ -14,44 +19,6 @@ app_version() {
  echo $DRONE_SERVER_VERSION
 }
 
-podman_version() {
- /usr/bin/podman --version |  awk -F ' ' '{print $3}'
+app_entrypoint() {
+ /usr/bin/drone-server --env-file /etc/container/drone-server.env
 }
-
-runner_exec_version() {
-  . /mnt/volumes/configmap/runner-exec.env
- echo $DRONE_RUNNER_EXEC_VERSION
-}
-
-log "-i" "entrypoint" "Start drone"
-/usr/bin/pgrep /usr/bin/podman > /dev/null
-TEST=$?
-if [ $TEST -eq 1 ] ; then
- log "-i" "entrypoint" "Forked podman($(podman_version))"
- /usr/bin/podman --log-level fatal system service --time 0 &
-fi
-
-/usr/bin/pgrep drone-runner-exec > /dev/null
-TEST=$?
-if [ $TEST -eq 1 ] ; then
- log "-i" "entrypoint" "Forked runner-exec($(runner-exec-version))"
- /usr/bin/drone-runner-exec daemon "/etc/container/runner-exec.env" &
-fi
-
-if [ -z "$@" ] ; then
- /usr/bin/pgrep drone-server > /dev/null
- TEST=$?
- if [ $TEST -eq 1 ] ; then
-  log "-i" "entrypoint" "Blocking server($(app_version))"
-  /usr/bin/drone-server --env-file /etc/container/server.env
- fi
- return 1
-else
- /usr/bin/pgrep drone-server > /dev/null
- TEST=$?
- if [ $TEST -eq 1 ] ; then
-  log "-i" "entrypoint" "Forked server($(app_version))"
-  /usr/bin/drone-server --env-file /etc/container/server.env >> /mnt/volumes/container/_log 2>&1 &
- fi
- return 0
-fi

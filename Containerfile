@@ -1,12 +1,11 @@
 ARG ALPINE_VERSION=latest
 
 # ╭―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――╮
-# │                                                                           │
-# │ STAGE 1: src-drone - Build drone from source and several (Docker, Exec,   |
-# | Kube) runners also from source.                                           │
-# │                                                                           │
+# │                                                                         │
+# │ STAGE 1: Build drone from source                                        │
+# │                                                                         │
 # ╰―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――╯
-FROM gautada/alpine:$ALPINE_VERSION as src-drone
+FROM gautada/alpine:$ALPINE_VERSION as src
 
 # ╭――――――――――――――――――――╮
 # │ VERSION(S)         │
@@ -14,17 +13,8 @@ FROM gautada/alpine:$ALPINE_VERSION as src-drone
 ARG DRONE_SERVER_VERSION=2.15.0
 ARG DRONE_SERVER_BRANCH=v"$DRONE_SERVER_VERSION"
 
-ARG DRONE_RUNNER_EXEC_VERSION=1.0.0-beta.10
-ARG DRONE_RUNNER_EXEC_BRANCH=v"$DRONE_RUNNER_EXEC_VERSION"
-
-ARG DRONE_CLI_VERSION=1.6.2
-ARG DRONE_CLI_BRANCH=v"$DRONE_CLI_VERSION"
-
-# ARG DRONE_RUNNER_DOCKER_VERSION=1.8.1
-# ARG DRONE_RUNNER_DOCKER_BRANCH=v"$DRONE_RUNNER_DOCKER_VERSION"
-
-# ARG DRONE_RUNNER_KUBE_VERSION=1.0.0-rc.3
-# ARG DRONE_RUNNER_KUBE_BRANCH=v"$DRONE_RUNNER_KUBE_VERSION"
+# ARG DRONE_CLI_VERSION=1.6.2
+# ARG DRONE_CLI_BRANCH=v"$DRONE_CLI_VERSION"
 
 # ╭――――――――――――――――――――╮
 # │ CHANGE UPS USER    │
@@ -43,27 +33,21 @@ RUN git config --global advice.detachedHead false
 # ╰――――――――――――――――――――╯
 RUN mkdir -p /usr/lib/go/src/github.com
 WORKDIR /usr/lib/go/src/github.com
+
 RUN git clone --branch $DRONE_SERVER_BRANCH --depth 1 https://github.com/harness/drone.git
-RUN git clone --branch $DRONE_CLI_BRANCH --depth 1 https://github.com/harness/drone-cli.git
-# RUN git clone --branch $DRONE_RUNNER_DOCKER_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-docker.git
-RUN git clone --branch $DRONE_RUNNER_EXEC_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-exec.git
-# RUN git clone --branch $DRONE_RUNNER_KUBE_BRANCH --depth 1 https://github.com/drone-runners/drone-runner-kube.git
+
+# RUN git clone --branch $DRONE_CLI_BRANCH --depth 1 https://github.com/harness/drone-cli.git
 
 # ╭――――――――――――――――――――╮
 # │ BUILD              │
 # ╰――――――――――――――――――――╯
 WORKDIR /usr/lib/go/src/github.com/drone/cmd/drone-server
 RUN go build -o release/linux/arm64/drone-server
-WORKDIR /usr/lib/go/src/github.com/drone-cli
-# RUN go build -o release/linux/arm64/drone-cli
-# Not sure why CLI is different thant the others
-RUN go install ./...
-# WORKDIR /usr/lib/go/src/github.com/drone-runner-docker
-# RUN go build -o release/linux/arm64/drone-runner-docker
-WORKDIR /usr/lib/go/src/github.com/drone-runner-exec
-RUN go build -o release/linux/arm64/drone-runner-exec
-# WORKDIR /usr/lib/go/src/github.com/drone-runner-kube
-# RUN go build -o release/linux/arm64/drone-runner-kube
+
+# WORKDIR /usr/lib/go/src/github.com/drone-cli
+# # RUN go build -o release/linux/arm64/drone-cli
+# # Not sure why CLI is different thant the others
+# RUN go install ./...
 
 # ╭――――――――――――――――-------------------------------------------------------――╮
 # │                                                                         │
@@ -77,7 +61,7 @@ FROM gautada/alpine:$ALPINE_VERSION
 # ╰――――――――――――――――――――╯
 LABEL source="https://github.com/gautada/drone-container.git"
 LABEL maintainer="Adam Gautier <adam@gautier.org>"
-LABEL description="This container is a a drone CI installation."
+LABEL description="This container is a a drone installation with commandline with the exec kube runners"
 
 # ╭――――――――――――――――――――╮
 # │ STANDARD CONFIG    │
@@ -113,40 +97,22 @@ RUN /bin/chown -R $USER:$USER /mnt/volumes/container \
 # ╭――――――――――――――――――――╮
 # │ APPLICATION        │
 # ╰――――――――――――――――――――╯
-RUN /sbin/apk add --no-cache buildah podman fuse-overlayfs git slirp4netns sqlite
-
-RUN /usr/sbin/usermod --add-subuids 100000-165535 $USER \
- && /usr/sbin/usermod --add-subgids 100000-165535 $USER
+# RUN /sbin/apk add --no-cache build-base yarn npm git openssh-client openssh
+RUN /sbin/apk add --no-cache  sqlite
+# buildah podman fuse-overlayfs git slirp4netns
  
-COPY --from=src-drone /usr/lib/go/src/github.com/drone/cmd/drone-server/release/linux/arm64/drone-server /usr/bin/drone-server
-COPY --from=src-drone /usr/lib/go/bin/drone /usr/bin/drone
-COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-exec/release/linux/arm64/drone-runner-exec /usr/bin/drone-runner-exec
-# COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-docker/release/linux/arm64/drone-runner-docker /usr/bin/drone-runner-docker
-# COPY --from=src-drone /usr/lib/go/src/github.com/drone-runner-kube/release/linux/arm64/drone-runner-kube /usr/bin/drone-runner-kube
+COPY --from=src /usr/lib/go/src/github.com/drone/cmd/drone-server/release/linux/arm64/drone-server /usr/bin/drone-server
 
-RUN /bin/mkdir -p /etc/container \
- && /bin/ln -fsv /mnt/volumes/configmaps/server.env /etc/container/server.env \
- && /bin/ln -fsv /mnt/volumes/configmaps/runner-docker.env /etc/container/runner-docker.env \
- && /bin/ln -fsv /mnt/volumes/configmaps/runner-exec.env /etc/container/runner-exec.env \
- && /bin/ln -fsv /mnt/volumes/configmaps/runner-kube.env /etc/container/runner-kube.env \
- && /bin/ln -fsv /mnt/volumes/configmaps/cli.env /etc/container/cli.env \
- && /bin/ln -fsv /mnt/volumes/container/server.env /mnt/volumes/configmaps/server.env \
- && /bin/ln -fsv /mnt/volumes/container/runner-docker.env /mnt/volumes/configmaps/runner-docker.env \
- && /bin/ln -fsv /mnt/volumes/container/runner-exec.env /mnt/volumes/configmaps/runner-exec.env \
- && /bin/ln -fsv /mnt/volumes/container/runner-kube.env /mnt/volumes/configmaps/runner-kube.env \
- && /bin/ln -fsv /mnt/volumes/container/cli.env /mnt/volumes/configmaps/cli.env \
- && /bin/ln -fsv /tmp/podman-run-1002/podman/podman.sock /var/run/docker.sock
+# COPY --from=src /usr/lib/go/bin/drone /usr/bin/drone
 
-RUN /bin/touch /var/log/drone-server.log \
- && /bin/touch /var/log/drone-runner-exec.log \
- && /bin/touch /var/log/drone-runner-docker.log \
- && /bin/touch /var/log/drone-runner-kube.log
+RUN /bin/mkdir -p /etc/container
+
+RUN /bin/ln -fsv /mnt/volumes/configmaps/drone-server.env /etc/container/drone-server.env \
+ && /bin/ln -fsv /mnt/volumes/container/drone-server.env /mnt/volumes/configmaps/drone-server.env
  
-RUN /bin/mkdir -p /opt/$USER \
- && /bin/chown $USER:$USER -R /opt/$USER /var/log/drone-*.log
-
-# RUN ln -s /etc/container/configmap.d /etc/drone
-
+# RUN /bin/ln -fsv /mnt/volumes/configmaps/drone-cli.env /etc/container/drone-cli.env \
+#  && /bin/ln -fsv /mnt/volumes/container/drone-cli.env /mnt/volumes/configmaps/drone-cli.env
+ 
 # Not home so the core.sqlite database is accessable via volume
 RUN /bin/ln -fsv /mnt/volumes/container/core.sqlite /home/$USER/core.sqlite
 
@@ -158,5 +124,9 @@ VOLUME /mnt/volumes/backup
 VOLUME /mnt/volumes/configmaps
 VOLUME /mnt/volumes/container
 EXPOSE 8080/tcp
-EXPOSE 3000/tcp
 WORKDIR /home/$USER
+
+# ╭――――――――――――――――――――╮
+# │ CONFIGRE          │
+# ╰――――――――――――――――――――╯
+# RUN /usr/bin/yarn global add wetty
