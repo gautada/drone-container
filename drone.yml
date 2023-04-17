@@ -35,6 +35,26 @@ steps:
    - /usr/bin/podman push docker.io/$DOCKERIO_USERNAME/$CONTAINER_NAME:$CONTAINER_VERSION
    - /usr/bin/podman push docker.io/$DOCKERIO_USERNAME/$CONTAINER_NAME:latest
    
+- name: deploy
+  failure: ignore
+  environment:
+    DRONE_SERVER:
+      from_secret: server.drone.io
+    DRONE_TOKEN:
+      from_secret: token.drone.io
+    GIT_USERNAME:
+      from_secret: username.git.gautier.org 
+    GIT_PASSWORD:
+      from_secret: password.git.gautier.org
+  commands:   
+  - git clone https://$GIT_USERNAME:$GIT_PASSWORD@git.gautier.org/Cluster/drone-manifest.git manifest
+  - /bin/ls -l manifest/
+  - /usr/bin/kubectl apply -f manifest/configmap.yml
+  - /usr/bin/kubectl apply -f manifest/ingress.yml  
+  - /usr/bin/kubectl apply -f manifest/service.yml  
+  - /usr/bin/kubectl apply -f manifest/deployment.yml &
+  - /usr/bin/drone build create --branch main gautada/drone-runner-container
+
 trigger:
   branch:
   - main
