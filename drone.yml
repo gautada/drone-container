@@ -38,6 +38,7 @@ steps:
 - name: deploy
   failure: ignore
   environment:
+    KUBECONFIG: "/mnt/volumes/configmaps/kubeconfig"
     DRONE_SERVER:
       from_secret: server.drone.io
     DRONE_TOKEN:
