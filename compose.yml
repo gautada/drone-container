@@ -5,7 +5,7 @@ services:
       args:
         ALPINE_VERSION: "latest"
         DRONE_SERVER_VERSION: 2.16.0
-        # DRONE_CLI_VERSION: 1.7.0
+        CONTAINER_VERSION: 2.16.0
       context: .
       dockerfile: Containerfile
       no_cache: true
