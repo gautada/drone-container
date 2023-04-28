@@ -10,11 +10,11 @@ services:
       dockerfile: Containerfile
       no_cache: true
       tags:
-        - "drone:dev"
+        - "drone:build"
     environment:
       - SYSTEM_ENVIRONMENT=DEVELOPMENT
     hostname: "drone"
-    image: "drone:dev"
+    image: "drone:build"
     privileged: true
     ports:
       - "8080:8080"
