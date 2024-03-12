@@ -18,6 +18,8 @@ steps:
       from_secret: username.docker.io
     DOCKERIO_PASSWORD:
       from_secret: password.docker.io
+    PUBLISH_REPOSITORY:
+      value: docker.io
   commands:
   - pwd
   - /usr/sbin/image-name
