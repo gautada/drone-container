@@ -22,7 +22,7 @@ RUN echo "$DRONE_BRANCH -- $DRONE_RUNNER"
 RUN git clone --branch $DRONE_BRANCH --depth 1 https://github.com/harness/drone.git
 
 WORKDIR /usr/lib/go/src/github.com/drone/cmd/drone-server
-RUN /usr/bin/go mod download github.com/hashicorp/go-rootcerts
+# RUN /usr/bin/go mod download github.com/hashicorp/go-rootcerts
 RUN /usr/bin/go build -o release/linux/arm64/drone-server
 
 # ╭――――――――――――――――-------------------------------------------------------――╮
