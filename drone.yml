@@ -36,8 +36,10 @@ steps:
       value: docker.io
   commands:
   - echo "$(/usr/sbin/image-version)"
+  - /usr/sbin/image-tag "$(/usr/sbin/image-version)"
+  - /usr/sbin/image-publish "$(/usr/sbin/image-version)"
   - /usr/sbin/image-tag latest
-  - /usr/sbin/image-publish test
+  - /usr/sbin/image-publish latest
 #  when:
 #     branch:
 #     - main  
