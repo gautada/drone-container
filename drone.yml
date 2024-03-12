@@ -25,7 +25,22 @@ steps:
   - /usr/sbin/image-name
   - /usr/sbin/image-tag test
   - /usr/sbin/image-publish test
-  
+
+- name: integrate
+  environment:
+    DOCKERIO_USERNAME:
+      from_secret: username.docker.io
+    DOCKERIO_PASSWORD:
+      from_secret: password.docker.io
+    PUBLISH_REPOSITORY:
+      value: docker.io
+  commands:
+  - echo "$(/usr/sbin/image-version)"
+  - /usr/sbin/image-tag latest
+  - /usr/sbin/image-publish test
+#  when:
+#     branch:
+#     - main  
 
 trigger:
   event:
