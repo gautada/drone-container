@@ -74,7 +74,7 @@ COPY --from=src /usr/lib/go/src/github.com/drone/cmd/drone-server/release/linux/
 RUN /bin/ln -fsv /mnt/volumes/configmaps/drone-server.env /etc/container/drone-server.env \
  && /bin/ln -fsv /mnt/volumes/container/drone-server.env /mnt/volumes/configmaps/drone-server.env
 
-COPY .envs.conf /mnt/volumes/container/drone-server.env
+# COPY .envs.conf /mnt/volumes/container/drone-server.env
 
 RUN /bin/ln -fsv /mnt/volumes/container/core.sqlite /home/$USER/core.sqlite
 
