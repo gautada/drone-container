@@ -19,6 +19,7 @@ steps:
     DOCKERIO_PASSWORD:
       from_secret: password.docker.io
   commands:
+  - pwd
   - image-tag test
   - image-publish test
   
