@@ -20,8 +20,8 @@ steps:
       from_secret: password.docker.io
   commands:
   - pwd
-  - image-tag test
-  - image-publish test
+  - /usr/sbin/image-tag test
+  - /usr/sbin/image-publish test
   
 
 trigger:
