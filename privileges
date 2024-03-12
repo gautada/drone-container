@@ -1,0 +1,3 @@
+%privileged ALL = (ALL) NOPASSWD: /usr/sbin/crond
+%privileged ALL = (ALL) NOPASSWD: /usr/bin/container-backup
+%privileged ALL = (ALL) NOPASSWD: /etc/periodic/hourly/container-backup
