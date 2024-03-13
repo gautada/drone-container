@@ -1,60 +1,55 @@
 kind: pipeline
 type: exec
-name: CICD - Drone Container
+name: CICD - Container Build
 
 platform:
   os: linux
   arch: arm64
 
 steps:
-
 - name: build
   commands:
-  - /usr/bin/podman-compose build --no-cache
-  
-- name: test
+  - /usr/sbin/image-build
+  - /usr/bin/podman images
+
+- name: publish(test)
   environment:
     DOCKERIO_USERNAME:
       from_secret: username.docker.io
     DOCKERIO_PASSWORD:
       from_secret: password.docker.io
+    PUBLISH_REPOSITORY:
+      value: docker.io
   commands:
-  - echo "No tests are defined at this time."
-  - /usr/bin/podman login --username=$DOCKERIO_USERNAME --password=$DOCKERIO_PASSWORD docker.io
-  - /usr/bin/podman tag $DOCKERIO_USERNAME/$(/usr/bin/compose-data --name):build docker.io/$DOCKERIO_USERNAME/$(/usr/bin/compose-data --name):test
-  - /usr/bin/podman push docker.io/$DOCKERIO_USERNAME/$(/usr/bin/compose-data --name):test
-  
+  - pwd
+  - /usr/sbin/image-name
+  - /usr/sbin/image-tag test
+  - /usr/sbin/image-publish test
+
 - name: integrate
   environment:
     DOCKERIO_USERNAME:
       from_secret: username.docker.io
     DOCKERIO_PASSWORD:
       from_secret: password.docker.io
+    PUBLISH_REPOSITORY:
+      value: docker.io
   commands:
-  - /usr/bin/podman tag $(/usr/bin/compose-data --name):build docker.io/$DOCKERIO_USERNAME/$(/usr/bin/compose-data --name):$(/usr/bin/compose-data --version)
-  - /usr/bin/podman tag $(/usr/bin/compose-data --name):build docker.io/$DOCKERIO_USERNAME/$(/usr/bin/compose-data --name):latest
-  - /usr/bin/podman login --username=$DOCKERIO_USERNAME --password=$DOCKERIO_PASSWORD docker.io
-  - /usr/bin/podman push docker.io/$DOCKERIO_USERNAME/$(/usr/bin/compose-data --name):latest
-  - /usr/bin/podman push docker.io/$DOCKERIO_USERNAME/$(/usr/bin/compose-data --name):$(/usr/bin/compose-data --version)
-  when:
-    branch:
-    - main
+  - echo "$(/usr/sbin/image-version)"
+  - /usr/sbin/image-tag "$(/usr/sbin/image-version)"
+  - /usr/sbin/image-publish "$(/usr/sbin/image-version)"
+  - /usr/sbin/image-tag latest
+  - /usr/sbin/image-publish latest
+#  when:
+#     branch:
+#     - main  
 
-
-- name: deploy
-  failure: ignore
-  environment:
-    DRONE_SERVER:
-      from_secret: server.drone.io
-    DRONE_TOKEN:
-      from_secret: token.drone.io
-  commands:
-  - /usr/bin/drone build create --branch main gautada/drone-runner-container
-  when:
-    branch:
-    - main
-    
 trigger:
   event:
   - push
+  
 
+
+
+
+  
