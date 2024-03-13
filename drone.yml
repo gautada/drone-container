@@ -40,9 +40,9 @@ steps:
   - /usr/sbin/image-publish "$(/usr/sbin/image-version)"
   - /usr/sbin/image-tag latest
   - /usr/sbin/image-publish latest
-#  when:
-#     branch:
-#     - main  
+  when:
+    branch:
+    - main  
 
 trigger:
   event:
