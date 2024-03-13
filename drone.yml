@@ -12,7 +12,7 @@ steps:
   - /usr/sbin/image-build
   - /usr/bin/podman images
 
-- name: publish(test)
+- name: push
   environment:
     DOCKERIO_USERNAME:
       from_secret: username.docker.io
@@ -26,7 +26,7 @@ steps:
   - /usr/sbin/image-tag test
   - /usr/sbin/image-publish test
 
-- name: integrate
+- name: publish
   environment:
     DOCKERIO_USERNAME:
       from_secret: username.docker.io
